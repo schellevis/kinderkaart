@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kinderkaart — activiteiten voor kinderen in Nederland</title>
+    <meta name="description" content="Vind musea, speeltuinen, dierentuinen en meer voor kinderen in Nederland." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗺️</text></svg>" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.5.0/dist/maplibre-gl.css" crossorigin />
+  </head>
+  <body>
+    <div id="loading" aria-live="polite" role="status">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Kinderkaart laden…</p>
+    </div>
+
+    <div id="app">
+      <!-- Desktop side panel -->
+      <aside id="side-panel" role="complementary" aria-label="Zoeken en filteren">
+        <div id="panel-search-wrapper">
+          <!-- search bar injected by JS -->
+        </div>
+        <div id="panel-filters">
+          <!-- chips + toggles injected by JS -->
+        </div>
+        <div id="result-count" aria-live="polite"></div>
+        <div id="results-list" role="list" aria-label="Resultaten">
+          <!-- results injected by JS -->
+        </div>
+        <div id="detail-panel" role="region" aria-label="Details">
+          <!-- detail injected by JS -->
+        </div>
+      </aside>
+
+      <!-- Map (contains its own overlay so it stays within map bounds) -->
+      <main id="map" aria-label="Kaart">
+        <!-- Mobile map overlay: search + chips, positioned inside map -->
+        <div id="map-overlay" aria-hidden="true">
+          <div id="mobile-search-wrapper">
+            <!-- search bar injected by JS -->
+          </div>
+          <div id="mobile-filters">
+            <!-- chips + toggles injected by JS -->
+          </div>
+        </div>
+      </main>
+
+      <!-- Geo button -->
+      <button id="geo-btn" class="map-btn" aria-label="Mijn locatie" title="Centreer op mijn locatie">
+        📍
+      </button>
+    </div>
+
+    <!-- Mobile bottom sheet -->
+    <div id="bottom-sheet" role="region" aria-label="Resultaten en details">
+      <div class="sheet-handle" role="button" tabindex="0" aria-label="Sleep om te openen of sluiten"></div>
+      <div class="sheet-header">
+        <span id="sheet-count"></span>
+      </div>
+      <div id="mobile-results" role="list" aria-label="Resultaten">
+        <!-- results injected by JS -->
+      </div>
+      <div id="mobile-detail" role="region" aria-label="Details">
+        <!-- detail injected by JS -->
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
