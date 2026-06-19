@@ -39,3 +39,10 @@ Plan 3: complete (commits 8b77aa6..8a42252, opus review found C1/I1/I2/M1, fixed
 - [x] Spike 1 (search): client-side FlexSearch (~0.2MB gz, ~3.8ms query). NO Vercel.
 - [x] Spike 2 (tile/cluster): client point index 0.54MB gz + Supercluster (idx 280ms, getClusters 0.04-0.13ms). NO PMTiles. Correctness oracle passes by construction. Detail = sharded JSON.
 - Architecture simplified: fully static on GitHub Pages (no Vercel/PMTiles/Releases). Real browser render-latency deferred to Plan 5 (Playwright).
+
+## Plan 4 — Build + Publish (docs/superpowers/plans/2026-06-19-kinderkaart-build-publish.md)
+- [ ] Task 1: shared fnv1a hash
+- [ ] Task 2: points-index builder
+- [ ] Task 3: detail-shard builder + lookup
+- [ ] Task 4: publish-gate
+- [ ] Task 5: build CLI (artifacts + manifest + last-known-good)
