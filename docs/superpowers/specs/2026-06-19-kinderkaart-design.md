@@ -62,55 +62,56 @@ client-side over de gefilterde features** (§9b). Vrije-tekstzoeken via de in §
 route. Web-app, browse-data, detail-shards en zoekindex komen uit **dezelfde build** en
 delen één `data_version`, geactiveerd via één manifest-switch (§7).
 
-## 4. Gedeeld POI-schema
+## 4. Twee-fasen POI-schema (bron vs canoniek)
 
-Getypeerd (pydantic). Onbekend ≠ false; ontbrekende info is expliciet `null`.
+Getypeerd (pydantic, alle contractmodellen `extra="forbid"`). Onbekend ≠ false;
+ontbrekende info is expliciet `null`. **Twee fasen, twee modellen** — de adapter-output
+en de publicatie-output zijn semantisch verschillend en mogen niet hetzelfde type delen:
+
+- **`SourcePOI`** — output van een adapter (één bron, vóór merge). Heeft een **eigen
+  bronidentiteit** (`source_id`, `source_record_id`) en bronprovenance; **geen** publieke
+  `poi_id`, `aliases` of `build_version`.
+- **`CanonicalPOI`** — output van de merge/publicatie (§6). Heeft de stabiele publieke
+  `poi_id`, `external_ids`, `aliases`, gemergde provenance en `build_version`.
 
 ```python
-class Image:
-    url: str
-    source_page: str        # bv. Commons-bestandspagina
-    author: str | None
-    license: str            # bv. "CC-BY-SA-4.0"
-    license_url: str
-
-class POI:
-    # Identiteit
-    poi_id: str             # stabiele publieke sleutel van het samengevoegde object
-    external_ids: dict      # {"osm": "...", "wikidata": "Q..", "rce": ".."}
-    aliases: list[str]      # eerder gepubliceerde poi_id's (redirects voor deep-links)
-
-    # Kern
-    name: str
-    categories: list[str]   # >1 toegestaan: playground | museum | zoo | petting_zoo
-                            #                | pool | play_park | restaurant_kidfriendly
-    lat: float; lon: float  # representatief punt (regel: zie §6)
-    country: str            # ISO 3166-1 alpha-2, bv. "nl"
-    address: dict | None    # straat, huisnr, postcode, plaats
-
-    # Canonieke facetten (filterbaar) — alle optioneel, "onbekend" = null
+class FacetFields:                   # gedeelde, getypeerde domeinvelden
+    name: str                        # niet-leeg
+    categories: list[str]            # uniek, ⊆ vocabulary; ≥1
+    lat: float; lon: float           # representatief punt (§6)
+    country: str                     # ISO 3166-1 alpha-2, ⊆ ondersteunde landen (§12)
+    address: Address | None
     indoor: bool | None
     free: bool | None
-    price_model: str | None         # free | paid | donation | mixed
-    age_min: int | None; age_max: int | None
-    accessibility: dict | None      # wheelchair, toilet, etc. (per veld true|false|null)
-    opening_hours: str | None       # genormaliseerd (OSM opening_hours-syntax)
+    price_model: Literal["free","paid","donation","mixed"] | None   # consistent met free
+    age_min: int | None; age_max: int | None   # ≥0, age_min ≤ age_max
+    accessibility: Accessibility | None         # per veld true|false|null
+    opening_hours: str | None                   # OSM opening_hours-syntax
+    website: str | None                         # alleen http/https
+    images: list[Image]                         # leeg in MVP (§11); per-bestand licentie
+    tags: dict                                  # long-tail/bron-specifiek; NIET voor MVP-filters
 
-    # Media & links
-    website: str | None
-    images: list[Image]             # leeg in MVP (zie §11)
+class SourcePOI(FacetFields):
+    source_id: str                   # = manifest.id
+    source_record_id: str            # stabiele sleutel binnen die bron
+    source_url: str | None
+    source_date: date | None
+    fetched_at: datetime             # tz-aware, genormaliseerd naar UTC (= start van fetch)
+    field_provenance: dict           # veld → source_id, voor álle daadwerkelijk geleverde velden
 
-    # Provenance (per veld traceerbaar in field_provenance)
-    sources: list[str]              # alle bijdragende bron-id's
-    source_urls: dict               # bron-id → bron-URL
-    field_provenance: dict          # veld → bron-id die de waarde leverde
-    source_date: date | None        # wijzigingsdatum bij de bron, indien bekend
-    fetched_at: datetime            # wanneer opgehaald
-    build_version: str              # data_version van de build
-
-    tags: dict                      # alleen long-tail/bron-specifiek; NIET voor MVP-filters
+class CanonicalPOI(FacetFields):
+    poi_id: str                      # stabiele publieke sleutel (identity registry, §6)
+    external_ids: dict               # {"osm": "...", "wikidata": "Q..", "rce": ".."}
+    aliases: list[str]               # eerder gepubliceerde poi_id's (deep-link redirects)
+    sources: list[str]               # alle bijdragende source_id's (niet-leeg)
+    source_urls: dict                # source_id → bron-URL
+    field_provenance: dict           # veld → winnende source_id
+    source_date: date | None
+    fetched_at: datetime
+    build_version: str               # data_version van de build
 ```
 
+`Image` draagt per bestand `url, source_page, author|None, license, license_url` (§11).
 MVP-filtervelden (`indoor`, `free`, `age_*`, `categories`) zijn **getypeerde
 contractvelden**, niet vrije `tags`. Elke adapter documenteert zijn mapping + datakwaliteit.
 
@@ -137,12 +138,21 @@ category_map:
 entrypoint: "adapter.py"
 ```
 
-**Adapter = CLI**, niet één in-memory functie (testbaar, herstartbaar):
-- `adapter.py snapshot`  → haalt op, schrijft ruwe snapshot + checksum naar `data/raw/`.
-- `adapter.py normalize` → leest snapshot, **streamt genormaliseerde POI's als NDJSON**.
+**Adapter = CLI met een file/stream-contract** (testbaar, herstartbaar, schaalt naar een
+1,3 GB `.pbf`):
+- `adapter.py snapshot --output PATH` → downloadt **chunked naar disk** en schrijft een
+  **sidecar `PATH.meta.json`** (snapshot-envelope): `source_id`, endpoint + query(-hash),
+  `checksum` (sha256), `fetched_at` (start van fetch, UTC), adapter-/git-versie. De
+  orchestratie bewaart dit als immutable release-asset (§7).
+- `adapter.py normalize PATH [--fetched-at ISO]` → leest de snapshot **streamend**, neemt
+  `fetched_at` uit de sidecar (of `--fetched-at`), en **streamt `SourcePOI` als NDJSON**.
 
-Zo zijn netwerkfouten, fixtures en retries los te testen. Timeouts, retries, backoff en
-User-Agent staan centraal vastgelegd (gedeelde helper), niet per adapter herhaald.
+Reproduceerbaar: dezelfde snapshot + metadata → byte-identieke NDJSON. Een adapter die om
+formaatredenen de hele snapshot in geheugen houdt (bv. Wikidata-JSON) benoemt dat als
+**adapterspecifieke** keuze, niet als eigenschap van het gedeelde contract. Netwerkfouten,
+fixtures en retries zijn los te testen. Timeouts, retries (alleen retrybare statussen/
+transportfouten), backoff, `Retry-After` (seconden én HTTP-date) en een niet-overschrijfbare
+`User-Agent` staan centraal in een gedeelde helper met een injecteerbare client + sleep.
 
 ## 6. Merge / dedup (toetsbaar model, geen vaste vuistregel)
 
@@ -297,9 +307,19 @@ dit blokkeert het front-end-plan tot er een passend, gemeten contract ligt.
   leeftijd, afstand). **Onbekend toont niet als negatief** (geen `null`→`false`).
 - **Browse = statische PMTiles** (CDN, gratis); **detail lazy uit gesharde JSON** (§9b).
   **Zoeken** via §9-route.
+- **Geolocatie + auto-centreren:** bij het laden vraagt de app via de browser
+  (`navigator.geolocation`) toestemming voor de gebruikerslocatie. Bij toestemming
+  **centreert de kaart automatisch** op de gebruiker (passende zoom) en plaatst een
+  "jij hier"-marker; bij weigering/fout/onbeschikbaar valt de app terug op een default
+  NL-view. Toestemming wordt niet geforceerd en kan later via een knop opnieuw worden
+  aangevraagd. Locatie blijft client-side (privacy, §14) — niet naar een server gestuurd.
 - **Afstand** wordt gemeten vanaf een expliciete referentie: (1) apparaatlocatie na
   toestemming, anders (2) kaartmiddelpunt, of (3) gezochte plaats. Toestemmingsstatus en
   een alternatief zonder geolocatie zijn onderdeel van de UI.
+- **Mobile-first, responsive layout:** primair ontworpen voor mobiel (kaart full-screen,
+  filters/resultaten in een bottom-sheet of overlay, touch-vriendelijke targets). Op
+  **desktop extra overzicht**: kaart naast een persistent zijpaneel met de resultatenlijst
+  + filters tegelijk zichtbaar. Eén codebase, breakpoint-gestuurd; geen aparte build.
 - **Deep-links:** view (`lat/lon/z`) **én** geselecteerde `poi_id` (via `aliases`
   redirect-bestendig) **én** actieve query + filters — volledig deelbaar.
 - **Attributie:** zichtbaar op de kaart ("© OpenStreetMap contributors" + CC-BY-bronnen),
