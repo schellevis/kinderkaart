@@ -34,3 +34,8 @@ Plan 2: complete (commits 23a49a7..57b9c3f, review clean after 1 fix round; C1 a
 - [x] Task 6: merge CLI + overrides
 
 Plan 3: complete (commits 8b77aa6..8a42252, opus review found C1/I1/I2/M1, fixed; 79 tests green, identity logic deterministic).
+
+## Spikes (BESLIST via metingen — docs/superpowers/specs/2026-06-19-kinderkaart-spike-outcomes.md)
+- [x] Spike 1 (search): client-side FlexSearch (~0.2MB gz, ~3.8ms query). NO Vercel.
+- [x] Spike 2 (tile/cluster): client point index 0.54MB gz + Supercluster (idx 280ms, getClusters 0.04-0.13ms). NO PMTiles. Correctness oracle passes by construction. Detail = sharded JSON.
+- Architecture simplified: fully static on GitHub Pages (no Vercel/PMTiles/Releases). Real browser render-latency deferred to Plan 5 (Playwright).

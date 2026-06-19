@@ -1,10 +1,11 @@
 # Kinderkaart — Ontwerpdocument
 
 **Datum:** 2026-06-19
-**Status:** Concept — kernkeuzes gemaakt. **Twee spikes** staan open als eerste
-werkpakketten en moeten af zijn vóór de overige plannen implementatieklaar zijn:
-(1) zoekarchitectuur (§9), (2) tegel-/filter-/cluster-/detail-model (§9b). Beide
-draaien op representatieve data met **vooraf vastgelegde acceptatiegrenzen**.
+**Status:** Concept — kernkeuzes gemaakt; **beide spikes zijn met metingen BESLIST**
+(zie `2026-06-19-kinderkaart-spike-outcomes.md`). Uitkomst: **volledig statische
+architectuur op GitHub Pages** — client-side puntindex + Supercluster voor browse/clustering,
+client-side FlexSearch voor zoeken, gesharde JSON voor detail. **Geen Vercel, geen PMTiles,
+geen GitHub Releases.** §2/§7/§9/§9b/§10 hieronder zijn bijgewerkt naar die uitkomst.
 **Reviews verwerkt:** codex-review (`2026-06-19-kinderkaart-design-feedback.md`) +
 onafhankelijke Opus-review + derde review (clustering/identity/publicatie).
 
@@ -26,13 +27,12 @@ kindvriendelijke restaurants), met uitgebreide zoek- en filtermogelijkheden.
 | Laag | Keuze | Status |
 |---|---|---|
 | Front-end / kaart | MapLibre GL + Vite + TypeScript | beslist |
-| Browse-data | **Hypothese:** PMTiles met *ongeclusterde* punten + client-side clustering over gefilterde features (§9b) — of een (regionaal gesharde) client-puntindex | **hypothese — te valideren in spike 2 (correctness + perf)** |
-| POI-detail | gesharde statische JSON, lazy per klik, immutable + cache (§9b) | **shard-/lookupcontract te bepalen in spike 2** |
-| Data-hosting | Web-app op GitHub Pages; **data-artefacten (PMTiles/shards/index/manifest) als immutable GitHub Releases-assets** (Range + versieretentie, buiten 1 GB Pages-limiet) | **hypothese — Range/CORS te verifiëren in spike 2** |
+| Browse-data | **Volledige client-side puntindex (0,54 MB gz) + Supercluster over gefilterde features** | **beslist (spike 2: gemeten)** |
+| Zoeken | **Client-side FlexSearch-index** (~0,2 MB gz, ~4 ms query); geen server | **beslist (spike 1: gemeten)** |
+| POI-detail | gesharde statische JSON (`detail/<shard>.json`, hash-modulo, ~300/shard, ~5 KB gz), lazy per klik | beslist (spike 2) |
+| Data-hosting | **Alles statisch op GitHub Pages** (~1 MB totaal); versie-paden + `manifest.json`-switch | **beslist — geen Vercel/PMTiles/Releases** |
 | Scrapers / pipeline | Python (uv, py3.13): osmium, pyproj, pydantic, httpx | beslist |
 | Basemap | PDOK BRT-A — endpoint/style/fallback te verifiëren + pinnen in front-end-plan (§10); landspecifiek | te pinnen |
-| Zoeken | **Open: benchmark client-side static index vs Vercel-API** (§9) | **spike 1** |
-| Tegel/cluster/detail | **Validatie ongeclusterde PMTiles + client-cluster + lazy detail** (§9b) | **spike 2** |
 | Restaurant-bron | Agent-gedreven, codespace-only, gecureerd met provenance (§8) | beslist |
 
 ## 3. Architectuur
@@ -210,24 +210,21 @@ transportfouten), backoff, `Retry-After` (seconden én HTTP-date) en een niet-ov
   build reproduceerbaar/auditbaar is uit snapshot + checksum + adapterversie. **GC-invariant:**
   een snapshot of dataversie waarnaar een behouden/gepubliceerde build (of het huidige manifest)
   verwijst, wordt **nooit** opgeruimd — retentie respecteert de reproduceerbaarheidsclaim.
-- **Hosting (passend bij de host — hypothese, te verifiëren in spike 2):** GitHub Pages kan
-  **geen per-bestand `Cache-Control` zetten**, vervangt bij elke deploy de hele site, en kent
-  een **1 GB-limiet** — ongeschikt om meerdere immutable dataversies vast te houden. Daarom:
-  - **Web-app** (HTML/JS/CSS) → **GitHub Pages**.
-  - **Data-artefacten** (`tiles.pmtiles`, `detail/<shard>.json`, `search-index.*`) →
-    **immutable GitHub Releases-assets** per `data_version` (tag `data-<land>-<data_version>`):
-    ondersteunen **HTTP Range** (nodig voor PMTiles), zijn onveranderlijk, vallen buiten de
-    1 GB Pages-limiet en geven gratis versieretentie. **Te verifiëren in de spike:** Range +
-    cross-origin **CORS** op release-asset-URL's; lukt dat niet → fallback Vercel static of
-    Cloudflare R2 (custom headers + CORS + Range).
-  - **`manifest.json`** (klein: `land → data_version + absolute artefact-URL's`) → op **Pages**,
-    met de korte cache die Pages levert; client haalt eerst het manifest, daarna de
-    (immutable) release-assets.
-- **Atomische publicatie (transactie):** (1) upload alle immutable artefacten naar de nieuwe
-  release; (2) **verifieer** checksums + leesbaarheid (incl. een Range-request-smoketest);
-  (3) pas dán publiceer je het nieuwe `manifest.json` op Pages (de switch). Een client met een
-  oud manifest blijft geldige oude release-assets gebruiken; versies wijzigen nooit in-place.
-  **Rollback** = manifest terugzetten naar de vorige `data_version` (assets staan er nog).
+- **Hosting (BESLIST na spike 2 — alles statisch op GitHub Pages):** de totale payload is ~1 MB
+  (puntindex 0,54 MB gz + zoekindex 0,2 MB gz + detail-shards on-demand ~5 KB), ruim binnen de
+  1 GB Pages-limiet. **Geen GitHub Releases, geen Vercel, geen PMTiles** — die waren alleen nodig
+  voor HTTP-Range op grote PMTiles, wat hier vervalt.
+  - **Web-app + alle data-artefacten** (`points.json`, `search-index.json`, `detail/<shard>.json`,
+    `manifest.json`) → **GitHub Pages**.
+  - Artefacten staan onder **versie-paden** `data/<land>/<data_version>/…`; een klein top-level
+    **`manifest.json`** mapt `land → data_version + artefact-paden`. Pages' default
+    `Cache-Control: max-age=600` volstaat: het manifest wordt hooguit elke 10 min ververst, en
+    versie-paden veranderen per build → stale caching is onschadelijk.
+- **Atomische publicatie (transactie):** (1) schrijf alle nieuwe versie-artefacten; (2)
+  **verifieer** checksums + geldigheid (niet-leeg, unieke `poi_id`, coördinaten); (3) update als
+  láátste `manifest.json`. Eén Pages-deploy bevat zowel de nieuwe versie-paden als het nieuwe
+  manifest, dus een client krijgt altijd een consistente combinatie. **Rollback** = manifest +
+  vorige versie-pad terugzetten (vorige build in git-historie).
 - **Publish-gate** (anders: behoud last-known-good): schemafouten, aantallen buiten
   `expected_count`, ongeldige coördinaten, of een ontbrekende verplichte bron blokkeren publicatie.
 - **Verwijdering/veroudering:** een record dat uit de bron verdwijnt wordt na N builds
@@ -279,7 +276,11 @@ datapartnerschap; bronvermelding beperkt risico maar heft het niet op.
 - Mission-aligned alternatief: **Jantje Beton Buitenspeelkaart / Bureau Speelplan**,
   **Natuurmonumenten OERRR**, **Springzaad** (toestemming vragen i.p.v. scrapen).
 
-## 9. Spike 1 — Zoekarchitectuur (eerste werkpakket)
+## 9. Spike 1 — Zoekarchitectuur (BESLIST)
+
+> **Uitkomst:** client-side **FlexSearch**-index (~0,2 MB gz, ~3,8 ms query op 42k docs).
+> Route A wint; **geen Vercel**. Detail + meetmethode: `2026-06-19-kinderkaart-spike-outcomes.md`.
+> De onderstaande methodiek staat behouden als verantwoording.
 
 **Verplicht: representatieve data + vooraf vastgelegde acceptatiegrenzen.** Een spike
 zonder beslisregel levert alleen meetwaarden.
@@ -318,7 +319,14 @@ web/browse/index, en het concrete deploymentmechanisme (geen vaag "push naar Ver
 (alleen huidige kaartomgeving). We leveren ofwel een statische client-index als echte
 fallback, ofwel benoemen dit expliciet in de UI als beperkte offline-modus.
 
-## 9b. Spike 2 — Tegel-, filter-, cluster- en detailmodel (eerste werkpakket)
+## 9b. Spike 2 — Tegel-, filter-, cluster- en detailmodel (BESLIST)
+
+> **Uitkomst:** **volledige client-side puntindex (0,54 MB gz) + Supercluster** over de
+> gefilterde set (index 280 ms, `getClusters` 0,04–0,13 ms). **Geen PMTiles.** De
+> correctness-oracle slaagt per constructie (clustering over de héle gefilterde dataset).
+> Detail = gesharde JSON. Detail + metingen: `2026-06-19-kinderkaart-spike-outcomes.md`.
+> Echte in-browser render-latency wordt in Plan 5 met Playwright geverifieerd.
+> De onderstaande analyse staat behouden als verantwoording.
 
 **Het probleem (terecht door de review aangewezen):** build-time clusters kunnen niet
 correct worden herberekend voor willekeurige combinaties van categorie, leeftijd, gratis,
@@ -368,15 +376,16 @@ shard-/lookupcontract, hosting).
 
 ## 10. Front-end (MapLibre GL + Vite + TS)
 
-- Ongeclusterde PMTiles-punten + **client-side clustering over gefilterde features** (§9b);
-  categorie-iconen.
+- **Client-side puntindex + Supercluster** (§9b): de app laadt `points.json` (0,54 MB gz),
+  filtert client-side op de facetten, en clustert de gefilterde set met Supercluster →
+  clusteraantallen/-geometrie kloppen altijd met de actieve filters. Categorie-iconen.
 - **Basemap = PDOK BRT-A** (Achtergrondkaart). Exacte service (vector-tiles + style-JSON,
   met WMTS-raster als fallback) en style-versie worden **geverifieerd en gepind in het
   front-end-plan** (niet aannemen dat een endpoint stabiel is); attributie verplicht.
 - **Filterpaneel** op de getypeerde facetten (categorie, indoor/outdoor, gratis,
   leeftijd, afstand). **Onbekend toont niet als negatief** (geen `null`→`false`).
-- **Browse = statische PMTiles** (CDN, gratis); **detail lazy uit gesharde JSON** (§9b).
-  **Zoeken** via §9-route.
+- **Browse = client-side puntindex** (statisch van Pages); **detail lazy uit gesharde JSON** (§9b).
+  **Zoeken = client-side FlexSearch** (§9), geen server.
 - **Geolocatie + auto-centreren:** bij het laden vraagt de app via de browser
   (`navigator.geolocation`) toestemming voor de gebruikerslocatie. Bij toestemming
   **centreert de kaart automatisch** op de gebruiker (passende zoom) en plaatst een

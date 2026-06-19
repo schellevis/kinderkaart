@@ -1541,18 +1541,20 @@ merged data (Plans 2–3) and pre-registered acceptance thresholds before they c
 4. **Spike 2 — Tile/filter/cluster/detail model (spec §9b):** validate *unclustered* PMTiles +
    client-side clustering over filtered features + sharded lazy detail lookup against
    pre-registered perf budgets; lock the tile contract before the front-end plan.
-5. **Plan 4 — Build + publication (spec §7):** canonical DB → data artifacts + license report,
-   `data_version` stamping; **web app on GitHub Pages, immutable data artifacts as GitHub
-   Releases assets** (Range/CORS verified in spike 2), `manifest.json` atomic switch transaction
-   (upload → verify → publish manifest), rollback, publish-gate, last-known-good, snapshot
-   retention/GC with the reproducibility invariant. museum.nl excluded from public artifacts
+5. **Plan 4 — Build + publication (spec §7; spikes resolved):** canonical CanonicalPOI →
+   **static artifacts** `points.json` (client point index), `search-index.json` (FlexSearch
+   export), `detail/<shard>.json`, per-source license report, `manifest.json` — all under
+   `data/<land>/<data_version>/` on **GitHub Pages** (no Releases/Vercel/PMTiles). `data_version`
+   stamping, manifest-last atomic switch, publish-gate (count bands, coord validity, unique
+   poi_id, missing-source), last-known-good. museum.nl excluded from public artifacts
    (release-gate, §11).
-6. **Plan 5 — Front-end (spec §10):** MapLibre + unclustered-PMTiles browse with client-side
-   filtered clustering, lazy detail-shard fetch, typed facet filters, distance reference,
-   browser geolocation with auto-center + fallback NL view, mobile-first responsive layout
-   (desktop side-panel overview), favorites via localStorage (keyed on `poi_id`, alias-safe),
-   deep-links (view + `poi_id` + query/filters),
-   verified/pinned PDOK BRT-A basemap + raster fallback, attribution UI, a11y.
+6. **Plan 5 — Front-end (spec §10; spikes resolved):** MapLibre + **client-side point index +
+   Supercluster** browse/clustering over the filtered set, **client-side FlexSearch** search,
+   lazy detail-shard fetch, typed facet filters, distance reference, browser geolocation with
+   auto-center + fallback NL view, mobile-first responsive layout (desktop side-panel overview),
+   favorites via localStorage (keyed on `poi_id`, alias-safe), deep-links (view + `poi_id` +
+   query/filters), verified/pinned PDOK BRT-A basemap + raster fallback, attribution UI, a11y.
+   **Includes Playwright perf + cluster-correctness verification (the deferred spike-2 browser check).**
 7. **Plan 6 — CI orchestration (spec §7):** dispatcher workflow (matrix over manifests),
    `workflow_dispatch` for codespace-only sources, concurrency locking, freshness monitoring,
    pinned action/tool versions, atomic Pages + search-index deploy.
