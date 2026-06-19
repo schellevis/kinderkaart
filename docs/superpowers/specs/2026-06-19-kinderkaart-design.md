@@ -26,8 +26,9 @@ kindvriendelijke restaurants), met uitgebreide zoek- en filtermogelijkheden.
 | Laag | Keuze | Status |
 |---|---|---|
 | Front-end / kaart | MapLibre GL + Vite + TypeScript | beslist |
-| Browse-data | **PMTiles met *ongeclusterde* punten** (facetten als attributen) + **client-side clustering over gefilterde features** (§9b) | beslist (perf te valideren in spike 2) |
-| POI-detail | **gesharde statische JSON**, lazy per klik, immutable + cache (§9b) | beslist (shard-schema in spike 2) |
+| Browse-data | **Hypothese:** PMTiles met *ongeclusterde* punten + client-side clustering over gefilterde features (§9b) — of een (regionaal gesharde) client-puntindex | **hypothese — te valideren in spike 2 (correctness + perf)** |
+| POI-detail | gesharde statische JSON, lazy per klik, immutable + cache (§9b) | **shard-/lookupcontract te bepalen in spike 2** |
+| Data-hosting | Web-app op GitHub Pages; **data-artefacten (PMTiles/shards/index/manifest) als immutable GitHub Releases-assets** (Range + versieretentie, buiten 1 GB Pages-limiet) | **hypothese — Range/CORS te verifiëren in spike 2** |
 | Scrapers / pipeline | Python (uv, py3.13): osmium, pyproj, pydantic, httpx | beslist |
 | Basemap | PDOK BRT-A — endpoint/style/fallback te verifiëren + pinnen in front-end-plan (§10); landspecifiek | te pinnen |
 | Zoeken | **Open: benchmark client-side static index vs Vercel-API** (§9) | **spike 1** |
@@ -99,17 +100,28 @@ class SourcePOI(FacetFields):
     fetched_at: datetime             # tz-aware, genormaliseerd naar UTC (= start van fetch)
     field_provenance: dict           # veld → source_id, voor álle daadwerkelijk geleverde velden
 
+class SourceRef:                     # één bijdragend bronrecord (na merge ≥1)
+    source_id: str
+    source_record_id: str
+    source_url: str | None
+    source_date: date | None
+    fetched_at: datetime             # snapshot-tijd van dat record
+
 class CanonicalPOI(FacetFields):
     poi_id: str                      # stabiele publieke sleutel (identity registry, §6)
     external_ids: dict               # {"osm": "...", "wikidata": "Q..", "rce": ".."}
     aliases: list[str]               # eerder gepubliceerde poi_id's (deep-link redirects)
-    sources: list[str]               # alle bijdragende source_id's (niet-leeg)
-    source_urls: dict                # source_id → bron-URL
-    field_provenance: dict           # veld → winnende source_id
-    source_date: date | None
-    fetched_at: datetime
+    contributing: list[SourceRef]    # alle bijdragende bronrecords (URL + snapshotmetadata)
+    field_provenance: dict           # veld(-JSON-Pointer) → (source_id, source_record_id);
+                                     # per lijstitem traceerbaar
+    last_updated: date | None        # UI-samenvatting, afgeleid uit contributing (regel in §6)
     build_version: str               # data_version van de build
 ```
+
+`field_provenance` verwijst naar **`(source_id, source_record_id)`**, niet alleen een bron;
+voor geneste/meervoudige velden geldt JSON-Pointer-granulariteit per subveld/lijstitem. `contributing`
+vervangt het verliesgevende `source_urls/source_date/fetched_at` zodra meerdere records of
+snapshots van dezelfde bron bijdragen.
 
 `Image` draagt per bestand `url, source_page, author|None, license, license_url` (§11).
 MVP-filtervelden (`indoor`, `free`, `age_*`, `categories`) zijn **getypeerde
@@ -165,18 +177,29 @@ transportfouten), backoff, `Retry-After` (seconden én HTTP-date) en een niet-ov
 6. **Representatief punt:** voorkeur voor entree-node; anders centroid van geometrie.
 7. **Deterministisch & idempotent:** zelfde input → zelfde output.
 8. **`poi_id`-stabiliteit via een persistente identity registry.** Determinisme alleen is
-   niet genoeg: een stabiele publieke `poi_id` vereist **historische state**. We houden een
-   **versiebeheerde identity registry** bij (bv. `data/<land>/identity.json` of een kleine
-   SQLite, gecommit/als release-asset per build). De merge:
-   - leest de vorige registry,
-   - matcht een nieuw cluster op een bestaand `poi_id` via overlappende `external_ids`,
-   - **hergebruikt** dat `poi_id` (ook als de samenstelling licht wijzigt),
-   - **mint** een nieuw id alleen voor echt nieuwe objecten,
-   - bij split/merge: nieuwe id(s) + oude id(s) als `aliases` (deep-link-redirects),
-   - registry is append-only voor aliases; ids worden nooit hergebruikt voor een ander object.
-9. **Handmatige overrides:** versiebeheerd `overrides.yaml` voor geforceerde merges,
-   geforceerde splits en veldcorrecties.
-10. **Regressieset:** gelabelde echte merges én non-merges; golden tests in CI (§14).
+   niet genoeg: een stabiele publieke `poi_id` vereist **historische state**.
+   - **Eén autoritatieve opslag:** de registry is een **gecommit bestand in de repo**
+     (`data/<land>/identity.json`) — single source of truth, single-writer. De build-coördinator
+     (§7) is de enige schrijver (concurrency-lock); een nieuwe build leest gegarandeerd de
+     laatst gepubliceerde registry (uit de default branch), en commit de bijgewerkte registry
+     **in dezelfde atomische publicatie**; bij een mislukte publish wordt de registry-commit
+     teruggerold (geen half-bijgewerkte state).
+   - **Transitietabel (deterministisch):**
+     - *nieuw object* → mint nieuw `poi_id`.
+     - *match* (overlappende `external_ids` met precies één bestaand object) → hergebruik dat `poi_id`.
+     - *merge* (≥2 oude objecten → 1) → kies één **deterministische survivor** (hoogste bron-prioriteit,
+       tie-break op laagste oude `poi_id`); de overige oude id's worden `aliases` van de survivor.
+     - *split* (1 oud → ≥2 nieuw) → **één** nieuw object behoudt de oude `poi_id` (deterministische regel:
+       grootste `external_ids`-overlap, tie-break geografisch); de andere krijgen nieuwe id's. Kan de
+       eigenaar niet eenduidig kiezen, dan wordt de oude id een **tombstone** met expliciet "ambigu"-gedrag
+       (deep-link toont een keuzepagina i.p.v. te raden).
+     - *verwijdering* → `poi_id` wordt tombstone (na N builds), nooit hergebruikt voor een ander object.
+   - Registry is append-only voor aliases/tombstones; een `poi_id` wijst nooit naar een ander fysiek object.
+9. **Provenance-regel:** elk gemerged veld registreert `(source_id, source_record_id)` in
+   `field_provenance`; `last_updated` (UI) = max `source_date` (val terug op `fetched_at`) over `contributing`.
+10. **Handmatige overrides:** versiebeheerd `overrides.yaml` voor geforceerde merges,
+    geforceerde splits en veldcorrecties.
+11. **Regressieset:** gelabelde echte merges én non-merges; golden tests in CI (§14).
 
 ## 7. Datapijplijn & publicatie
 
@@ -184,16 +207,27 @@ transportfouten), backoff, `Retry-After` (seconden én HTTP-date) en een niet-ov
   (tag `snapshot-<bron>-<datum>`, niet in Git → geen repogroei). Retentiebeleid: bewaar de
   laatste *K* snapshots per bron + maandelijkse archieven; een **scheduled GC-workflow**
   ruimt oudere op. Builds refereren aan een snapshot via release-tag + checksum, zodat elke
-  build reproduceerbaar/auditbaar is uit snapshot + checksum + adapterversie.
-- **Atomische publicatie (concreet):**
-  - Artefacten staan onder een **per-versie pad**: `data/<land>/<data_version>/…`
-    (`tiles.pmtiles`, `detail/<shard>.json`, `search-index.*`). Deze zijn **immutable** en
-    content-gehasht → `Cache-Control: public, max-age=31536000, immutable`.
-  - Eén klein **`manifest.json`** (top-level) mapt `land → huidige data_version + artefact-URL's`,
-    geserveerd met `Cache-Control: no-cache` (of `max-age=60, stale-while-revalidate`).
-  - **Switch = manifest.json als láátste stap updaten.** Een client met een oud manifest
-    blijft geldige oude (nog aanwezige) artefacten gebruiken; na refetch van het manifest
-    krijgt hij de nieuwe versie. Geen half-verouderde mix omdat versies nooit in-place wijzigen.
+  build reproduceerbaar/auditbaar is uit snapshot + checksum + adapterversie. **GC-invariant:**
+  een snapshot of dataversie waarnaar een behouden/gepubliceerde build (of het huidige manifest)
+  verwijst, wordt **nooit** opgeruimd — retentie respecteert de reproduceerbaarheidsclaim.
+- **Hosting (passend bij de host — hypothese, te verifiëren in spike 2):** GitHub Pages kan
+  **geen per-bestand `Cache-Control` zetten**, vervangt bij elke deploy de hele site, en kent
+  een **1 GB-limiet** — ongeschikt om meerdere immutable dataversies vast te houden. Daarom:
+  - **Web-app** (HTML/JS/CSS) → **GitHub Pages**.
+  - **Data-artefacten** (`tiles.pmtiles`, `detail/<shard>.json`, `search-index.*`) →
+    **immutable GitHub Releases-assets** per `data_version` (tag `data-<land>-<data_version>`):
+    ondersteunen **HTTP Range** (nodig voor PMTiles), zijn onveranderlijk, vallen buiten de
+    1 GB Pages-limiet en geven gratis versieretentie. **Te verifiëren in de spike:** Range +
+    cross-origin **CORS** op release-asset-URL's; lukt dat niet → fallback Vercel static of
+    Cloudflare R2 (custom headers + CORS + Range).
+  - **`manifest.json`** (klein: `land → data_version + absolute artefact-URL's`) → op **Pages**,
+    met de korte cache die Pages levert; client haalt eerst het manifest, daarna de
+    (immutable) release-assets.
+- **Atomische publicatie (transactie):** (1) upload alle immutable artefacten naar de nieuwe
+  release; (2) **verifieer** checksums + leesbaarheid (incl. een Range-request-smoketest);
+  (3) pas dán publiceer je het nieuwe `manifest.json` op Pages (de switch). Een client met een
+  oud manifest blijft geldige oude release-assets gebruiken; versies wijzigen nooit in-place.
+  **Rollback** = manifest terugzetten naar de vorige `data_version` (assets staan er nog).
 - **Publish-gate** (anders: behoud last-known-good): schemafouten, aantallen buiten
   `expected_count`, ongeldige coördinaten, of een ontbrekende verplichte bron blokkeren publicatie.
 - **Verwijdering/veroudering:** een record dat uit de bron verdwijnt wordt na N builds
@@ -225,8 +259,13 @@ Geen open dataset levert overtuigend "kindvriendelijke restaurants". We bouwen d
 een `codespace-only` bron waarin **agents gericht zoeken** (web + OSM-signalen als
 `kids_area=yes`, nabije `leisure=playground`, `highchair=yes`) en kandidaten **cureren**.
 Eisen tegen ruis/hallucinatie:
-- elke POI krijgt **harde bewijs-velden** (`evidence`: bron-URL's + welk signaal),
-- alleen opnemen bij ≥1 verifieerbaar signaal; geen vrije "lijkt kindvriendelijk"-claim,
+- **Direct vs. indirect bewijs:** *direct* = het restaurant noemt zelf een kindervoorziening
+  (kindermenu, speelhoek, kinderstoel, verschoontafel). *Indirect* = context (nabije speeltuin).
+  **Vereist ≥1 direct signaal** om `restaurant_kidfriendly` te tonen; indirecte context is
+  hooguit aanvullend, nooit op zichzelf voldoende.
+- elke POI krijgt **harde bewijs-velden** (`evidence`: lijst van `{signaal-type,
+  direct: bool, bron-record-id, bron-URL, bewijsdatum}`) — een URL alleen is later niet auditbaar,
+- de UI toont **exact welk bewijs** beschikbaar is (transparant; geen kale "kindvriendelijk"-claim),
 - output gaat door **dezelfde normalisatie + publish-gate** als elke andere bron,
 - `runtime: codespace-only` → jij draait dit handmatig en kunt de output reviewen vóór publicatie.
 
@@ -243,9 +282,19 @@ datapartnerschap; bronvermelding beperkt risico maar heft het niet op.
 ## 9. Spike 1 — Zoekarchitectuur (eerste werkpakket)
 
 **Verplicht: representatieve data + vooraf vastgelegde acceptatiegrenzen.** Een spike
-zonder beslisregel levert alleen meetwaarden. De spike draait op een **representatieve
-merged dataset** (de echte NL-POI's uit Plannen 1–3), en we leggen de pass/fail-drempels
-*vóór* het meten vast. Pas dan vergelijken we twee routes:
+zonder beslisregel levert alleen meetwaarden.
+
+**Meetdataset (bootstrap — de spikes zijn de éérste werkpakketten, dus de pipelineplannen
+bestaan nog niet):** we bouwen een minimale bootstrap met de al beschikbare adapters
+(Wikidata-museums uit Plan 1) aangevuld met een **éénmalige OSM-extract** (osmium op de
+Geofabrik-`.pbf` voor playground/zoo/pool) tot een representatieve NL-set (~40–60k punten met
+realistische categorie-/facetverdeling). Deze meetdataset wordt **gepind met checksum** en als
+fixture-asset bewaard, zodat beide alternatieven **exact dezelfde data** meten.
+
+**Meetmethode bevriezen vóór elke meting:** dataset + categorie-/facetverdeling; apparaat,
+browser, netwerkprofiel en testlocatie; **koude vs. warme** HTTP- en applicatiecache (expliciet
+per meetpunt); aantal runs + p95-berekening; en het exacte meetpunt voor eerste-load, eerste
+zoekactie en (in §9b) first-points en detail-fetch. Pas met dit alles bevroren vergelijken we twee routes:
 
 - **A) Statische client-side index** (FlexSearch/MiniSearch, evt. gesharded per regio,
   op GitHub Pages): gratis, privacyvriendelijk (geen zoektekst naar derden), geen extra stack.
@@ -276,25 +325,46 @@ correct worden herberekend voor willekeurige combinaties van categorie, leeftijd
 indoor en afstand. Punten verbergen laat clusteraantallen/-geometrie op ongefilterde data
 staan. Daarom: **geen build-time clusters.**
 
-**Voorgesteld model (te valideren in deze spike):**
-- **PMTiles bevat ongeclusterde punten**, elk met de filterbare facetten als tile-attributen
-  (`categories`, `indoor`, `free`, `age_min`, `age_max`) + `poi_id` + minimale labelvelden.
-- De client laadt **in-viewport** features uit PMTiles, **filtert client-side**, en draait
-  **client-side clustering (supercluster)** over de *gefilterde* set. Clusteraantallen en
-  -geometrie kloppen dus altijd met de actieve filters. Afstandsfilter relatief aan het
-  referentiepunt (§10), client-side.
-- **POI-detail** (beschrijving, openingstijden, adres, images, provenance) zit **niet** in de
-  tiles maar in **gesharde statische JSON**: `detail/<shard>.json`, waarbij `shard` =
-  deterministische bucket (bv. geohash-prefix of hash-modulo van `poi_id`). Lazy ophalen bij
-  marker-klik, immutable + HTTP-gecachet. Shard-doel: ≤ ~300 POI's / ≤ ~50 KB gz per shard.
+**Dit is een hypothese, geen besluit.** De spike toetst *correctness vóór performance*.
+Bekende valkuilen die de spike expliciet moet oplossen:
+- **Viewport-grens:** MapLibre's `querySourceFeatures` ziet alleen **geladen tegels** —
+  features buiten de viewport ontbreken en tile-buffer kan features **dubbel** opleveren. Een
+  Supercluster-index over dát resultaat is geen samenhangende landelijke dataset; clusters aan
+  viewportranden worden afgekapt en aantallen kunnen bij klein pannen veranderen.
+- **MVT-properties zijn scalair** (string/getal/boolean) — **geen `list` of `null`**.
+  `categories: list[str]` en de "onbekend"-toestand van facetten vereisen een **expliciete
+  tile-encoding** (bv. bitmask/CSV-string + sentinelwaarde) **plus** bijbehorende MapLibre-
+  filterexpressies. Leg die encoding vast.
+- **Vast te leggen:** tegelzoomniveau waarop features worden gelezen; bewijs dat de tiler geen
+  punten dropt; world-wrap + buffer-duplicaten dedupliceren op `poi_id`; en **wanneer** de
+  clusterindex herbouwt (pan / zoom / filterwijziging).
 
-**Vooraf vastgelegde acceptatiegrenzen (startwaarden, te bevestigen) op NL-schaal (~40–60k punten):**
-time-to-first-points < 2 s (mid-range mobiel, "fast 3G"); pan/zoom-respons < 100 ms;
-initiële browse-transfer < 2 MB gz; piekgeheugen < 250 MB; detail-fetch < 150 ms p95.
-**Beslisregel:** haalt het model alle grenzen → vastleggen als definitief tegelcontract
-(zoomniveaus, attribuutset, shard-schema, lookup + cache). Zo niet → het model bijstellen
-(bv. server-side viewport-aggregatie of zoom-afhankelijke vereenvoudiging) en opnieuw meten;
-dit blokkeert het front-end-plan tot er een passend, gemeten contract ligt.
+**Te vergelijken alternatieven (minimaal drie):** (a) een **volledige of regionaal gesharde
+client-puntindex** (filter + Supercluster over de héle dataset, niet alleen viewport);
+(b) **PMTiles met een expliciete gebufferde tile-decodeerroute** (dedup op `poi_id`); en bij
+falen (c) **viewport-aggregatie buiten de client**.
+
+**Correctness-oracle (harde acceptatiegrens):** voor een set vaste viewports × filtercombinaties
+moeten de getoonde `poi_id`'s, clusteraantallen én clusterleden **exact overeenkomen** met
+clustering over de canonieke dataset. Faalt dit → het alternatief valt af, ongeacht snelheid.
+
+**POI-detail — begrensd, deterministisch lookupcontract (spike-output):**
+detail (beschrijving, openingstijden, adres, images, provenance) zit **niet** in de tiles maar
+in **gesharde statische JSON**. De spike levert één contract: **shardfunctie + versie**
+(deterministisch uit `poi_id`, bv. hash-modulo) + optionele shard-directory voor lookup, met een
+**build-gate op zowel recordaantal (≤ ~300) als bytes (≤ ~50 KB gz)** en gedrag bij groeiende
+buckets (re-shard/split). Een **deep-link moet een detailrecord vinden zonder eerst de
+bijbehorende kaarttegel te laden** (lookup via directory/manifest, niet via de tile).
+
+**Vooraf vastgelegde acceptatiegrenzen (startwaarden, te bevestigen) op NL-schaal (~40–60k punten),
+náást de correctness-oracle:** time-to-first-points < 2 s (mid-range mobiel, "fast 3G", **koude**
+cache); pan/zoom-respons < 100 ms (**warme** index); initiële browse-transfer < 2 MB gz;
+piekgeheugen < 250 MB; detail-fetch < 150 ms p95 (**koud**, dus inclusief hostingafstand —
+expliciet als koude netwerkmeting genoteerd). **Beslisregel:** een alternatief is alleen kandidaat
+als het de **correctness-oracle** haalt; daarna wint het alternatief dat alle perf-grenzen haalt.
+Geen enkel alternatief groen → model bijstellen en opnieuw meten. Dit blokkeert het front-end-plan
+tot er een correct én gemeten contract ligt (zoomniveaus, tile-encoding, dedup, herbouw-triggers,
+shard-/lookupcontract, hosting).
 
 ## 10. Front-end (MapLibre GL + Vite + TS)
 
@@ -334,20 +404,22 @@ dit blokkeert het front-end-plan tot er een passend, gemeten contract ligt.
   licentierapport** + de zichtbare UI-attributie.
 - **Gepubliceerde POI-database = ODbL** (eenvoudigste verdedigbare positie voor de
   OSM-afgeleide combinatie); per-bron CC-BY-attributies blijven behouden in `source_urls`.
-- **museum.nl:** geen open hergebruik-licentie; opgenomen als bewuste eigenaarskeuze met
-  bronvermelding (museum.nl publiceert namens musea die bezoek willen). Draait
-  `codespace-only`; risico expliciet vastgelegd. *Geen juridisch advies.*
+- **museum.nl:** geen open hergebruik-licentie; `codespace-only` beperkt alleen de
+  uitvoeromgeving, niet het recht om de geëxtraheerde data te **herpubliceren**. Daarom: museum.nl
+  zit **niet in publieke artefacten** totdat er schriftelijke toestemming of een passende licentie
+  is — dat is een **harde release-gate**, geen los actie-item. De build levert zonder museum.nl een
+  geldige publicatie (verwijderbaar gehouden). *Geen juridisch advies.*
 - **Afbeeldingen:** Wikidata-velden zijn CC0, maar een Commons-afbeelding (P18) heeft een
   **eigen licentie per bestand** (vaak maker-/licentievermelding). Daarom is `image: str`
   onvoldoende → het `Image`-type (§4) draagt maker, bronpagina, licentie, licentie-URL.
   **MVP publiceert geen afbeeldingen** (`images: []`); we activeren ze pas met correcte
   per-bestand-attributie.
 - Eindcombinatie ODbL + concrete CC-BY-bronnen juridisch laten toetsen.
-- **Open projectrisico's (expliciet, nog niet opgelost):** (1) de juridische houdbaarheid
-  van de gecombineerde ODbL-database mét CC-BY-bronnen vraagt een externe toets vóór brede
-  publicatie; (2) museum.nl blijft zonder expliciete toestemming/licentie een risico — daarom
-  geïsoleerd als `codespace-only` bron en **verwijderbaar** gehouden (de build moet zonder
-  museum.nl een geldige publicatie opleveren). Beide staan als actie-items, niet als opgelost.
+- **Juridische go/no-go-gates vóór brede publicatie (geen losse actie-items):**
+  (1) externe juridische toets van de gecombineerde ODbL + CC-BY-database = expliciet
+  **go/no-go**; (2) museum.nl in publieke artefacten = **geblokkeerd** tot schriftelijke
+  toestemming/licentie (release-gate, zie boven). De publieke MVP mag uitrollen zonder museum.nl;
+  de combinatie-toets moet "go" zijn vóór brede publicatie.
 
 ## 12. Multi-country (voorbereid, niet "gratis")
 
@@ -361,8 +433,9 @@ zoekpartitie. `country` = ISO 3166-1 alpha-2. **Taal is geen eigenschap van het 
 - **Categorieën:** playground, museum, zoo, petting_zoo, **pool** en **play_park**
   (gesplitst), restaurant_kidfriendly (agent-gecureerd).
 - **Land:** `nl`.
-- **Bronnen:** OSM, Wikidata, RCE, Den Haag + Eindhoven, museum.nl (codespace-only),
-  agent-restaurantbron (codespace-only), PDOK basemap.
+- **Bronnen:** OSM, Wikidata, RCE, Den Haag + Eindhoven, agent-restaurantbron (codespace-only),
+  PDOK basemap. **museum.nl staat klaar maar blijft uit publieke artefacten** tot toestemming
+  (release-gate, §11).
 - **Eerste werkpakketten:** spike 1 (zoekarchitectuur, §9) + spike 2 (tegel-/cluster-/
   detailmodel, §9b), beide op representatieve data met vooraf vastgelegde acceptatiegrenzen.
   Pas na beide spikes zijn front-end en build-plan implementatieklaar.

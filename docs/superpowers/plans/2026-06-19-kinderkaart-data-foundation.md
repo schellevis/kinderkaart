@@ -1509,10 +1509,12 @@ merged data (Plans 2–3) and pre-registered acceptance thresholds before they c
 4. **Spike 2 — Tile/filter/cluster/detail model (spec §9b):** validate *unclustered* PMTiles +
    client-side clustering over filtered features + sharded lazy detail lookup against
    pre-registered perf budgets; lock the tile contract before the front-end plan.
-5. **Plan 4 — Build + publication (spec §7):** canonical DB → unclustered PMTiles + sharded
-   detail JSON + license report, `data_version` stamping, versioned immutable artifacts +
-   `manifest.json` atomic switch + cache headers, publish-gate, last-known-good, snapshot
-   retention/GC.
+5. **Plan 4 — Build + publication (spec §7):** canonical DB → data artifacts + license report,
+   `data_version` stamping; **web app on GitHub Pages, immutable data artifacts as GitHub
+   Releases assets** (Range/CORS verified in spike 2), `manifest.json` atomic switch transaction
+   (upload → verify → publish manifest), rollback, publish-gate, last-known-good, snapshot
+   retention/GC with the reproducibility invariant. museum.nl excluded from public artifacts
+   (release-gate, §11).
 6. **Plan 5 — Front-end (spec §10):** MapLibre + unclustered-PMTiles browse with client-side
    filtered clustering, lazy detail-shard fetch, typed facet filters, distance reference,
    browser geolocation with auto-center + fallback NL view, mobile-first responsive layout
@@ -1522,4 +1524,6 @@ merged data (Plans 2–3) and pre-registered acceptance thresholds before they c
    `workflow_dispatch` for codespace-only sources, concurrency locking, freshness monitoring,
    pinned action/tool versions, atomic Pages + search-index deploy.
 8. **Plan 7 — Agent restaurant source (spec §8.1):** codespace-only curated source with
-   `evidence` fields, ≥1 verifiable signal gate, manual review before publication.
+   structured `evidence` (signal-type, direct flag, source-record-id, URL, evidence date),
+   **≥1 direct signal required** (indirect context never sufficient alone), UI shows the
+   evidence, manual review before publication.
