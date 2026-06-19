@@ -24,3 +24,11 @@ KNOWN: download() single-attempt streaming, no retry — Plan 2 must add retry a
 - [x] Task 6: OSM adapter (osmium)
 
 Plan 2: complete (commits 23a49a7..57b9c3f, review clean after 1 fix round; C1 address regression + I2 stable ids fixed). 52 tests green.
+
+## Plan 3 — Merge + Identity (docs/superpowers/plans/2026-06-19-kinderkaart-merge-identity.md)
+- [ ] Task 1: CanonicalPOI/SourceRef + external_ids on SourcePOI
+- [ ] Task 2: normalization + haversine helpers
+- [ ] Task 3: matcher (blocking, strong keys, scoring, union-find)
+- [ ] Task 4: field merge -> CanonicalPOI
+- [ ] Task 5: identity registry + transition table
+- [ ] Task 6: merge CLI + overrides
