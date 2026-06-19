@@ -1,0 +1,12 @@
+{
+  "type": "FeatureCollection",
+  "crs": {"type": "name", "properties": {"name": "urn:ogc:def:crs:EPSG::28992"}},
+  "features": [
+    {"type": "Feature", "id": "overzichtmusea.1",
+     "geometry": {"type": "Point", "coordinates": [121687.0, 487462.0]},
+     "properties": {"naam": "Rijksmuseum", "plaats": "Amsterdam", "postcode": "1071 ZC"}},
+    {"type": "Feature", "id": "overzichtmusea.2",
+     "geometry": {"type": "Point", "coordinates": [136502.0, 455849.0]},
+     "properties": {"naam": "Spoorwegmuseum", "plaats": "Utrecht", "postcode": "3581 XW"}}
+  ]
+}
