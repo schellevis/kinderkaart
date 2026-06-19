@@ -50,13 +50,15 @@ Plan 3: complete (commits 8b77aa6..8a42252, opus review found C1/I1/I2/M1, fixed
 Plan 4: complete (commits 032258b..83cb076, 91 tests green). END-TO-END SMOKE PASSED: 5 fixtures -> 9 SourcePOI -> merge -> 9 CanonicalPOI -> artifacts (points/detail/license/manifest) with correct category counts.
 
 ## Plan 5 — Front-end (docs/superpowers/plans/2026-06-19-kinderkaart-frontend.md)
-- [ ] Task 1: scaffold web app + tooling + sample data
-- [ ] Task 2: pure-logic lib modules (vitest)
-- [ ] Task 3: search + cluster wrappers
-- [ ] Task 4: MapLibre map + UI shell
-- [ ] Task 5: Playwright e2e (oracle + perf)
+- [x] Task 1: scaffold web app + tooling + sample data
+- [x] Task 2: pure-logic lib modules (vitest)
+- [x] Task 3: search + cluster wrappers
+- [x] Task 4: MapLibre map + UI shell
+- [x] Task 5: Playwright e2e (oracle + perf)
 
-### PENDING FIX (Plan 5 review): security
+### RESOLVED (Plan 5 review): security
 - XSS: web/src/ui/detail.ts assigns website + source_url to a.href without scheme allowlist.
   Spec §10 requires http/https only. Fix: validate via `new URL(...)`, allow only http(s),
   else render as text. (flagged by automated commit security review)
+
+Plan 5: complete (commits 4731f6a..ea65018). 78 unit tests, lint/typecheck/build clean, 20 e2e passed (desktop+mobile), perf <4000ms @4x throttle. C1/C2 XSS + C3 attribution + a11y fixed. Visually verified (screenshots). FlexSearch->hand-rolled index.
