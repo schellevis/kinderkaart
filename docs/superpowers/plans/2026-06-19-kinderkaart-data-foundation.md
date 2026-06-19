@@ -720,7 +720,7 @@ git commit -m "feat: add strict manifest model, loader, and exported JSON schema
   fetched_at: datetime, adapter_version: str`)
 - Produces: `http_get(url, *, client, sleep, params=None, headers=None, max_attempts=3,
   backoff=0.5, timeout=30.0) -> httpx.Response`
-- Produces: `download(url, output, *, client, sleep) -> str` (chunked write, returns sha256 hex)
+- Produces: `download(url, output, *, client, sleep, params=None) -> str` (chunked write, returns sha256 hex)
 - Produces: `write_ndjson(pois, out=None) -> int`
 - Produces: `run_cli(snapshot, normalize) -> None` where
   `snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata` and
@@ -841,6 +841,26 @@ def test_snapshot_metadata_is_strict():
             fetched_at=datetime(2026, 6, 19, tzinfo=timezone.utc),
             adapter_version="1", extra="boom",
         )
+
+
+def test_download_passes_params_and_returns_checksum():
+    import hashlib
+
+    from data_pipeline.adapter_base import download
+
+    seen = {}
+
+    def handler(request):
+        seen["url"] = str(request.url)
+        return httpx.Response(200, content=b"hello")
+
+    buf = io.BytesIO()
+    with _client(handler) as client:
+        checksum = download("https://x/api", buf, client=client, sleep=_no_sleep,
+                            params={"a": "b"})
+    assert "a=b" in seen["url"]
+    assert buf.getvalue() == b"hello"
+    assert checksum == hashlib.sha256(b"hello").hexdigest()
 ```
 
 - [ ] **Step 2: Run the test to verify it fails**
@@ -856,7 +876,6 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import json
 import sys
 from collections.abc import Callable, Iterable
 from datetime import datetime, timezone
@@ -934,8 +953,15 @@ def http_get(
     raise RuntimeError(f"GET {url} failed after {max_attempts} attempts") from last_exc
 
 
-def download(url: str, output: BinaryIO, *, client: httpx.Client, sleep: SleepFn) -> str:
-    resp = http_get(url, client=client, sleep=sleep)
+def download(
+    url: str,
+    output: BinaryIO,
+    *,
+    client: httpx.Client,
+    sleep: SleepFn,
+    params: dict | None = None,
+) -> str:
+    resp = http_get(url, client=client, sleep=sleep, params=params)
     digest = hashlib.sha256()
     for chunk in resp.iter_bytes():
         output.write(chunk)
@@ -992,7 +1018,7 @@ def run_cli(snapshot: _SnapshotFn, normalize: _NormalizeFn) -> None:
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `uv run pytest tests/test_adapter_base.py -v`
-Expected: PASS (7 passed)
+Expected: PASS (8 passed)
 
 - [ ] **Step 5: Lint, typecheck, commit**
 
@@ -1081,6 +1107,7 @@ entrypoint: adapter.py
 ```python
 import io
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -1089,10 +1116,11 @@ from pathlib import Path
 import httpx
 import pytest
 
-from data_pipeline.manifest import load_manifest, package_dir
+from data_pipeline.manifest import package_dir
 from sources.wikidata_museums.adapter import MANIFEST, normalize, snapshot
 
 FIXTURE = Path(__file__).parent / "fixtures" / "wikidata_museums_response.json"
+REPO_ROOT = Path(__file__).parent.parent
 FIXED = datetime(2026, 6, 19, tzinfo=timezone.utc)
 
 
@@ -1147,16 +1175,13 @@ def test_snapshot_uses_endpoint_and_returns_metadata():
 
 
 def test_cli_normalize_is_reproducible(tmp_path):
-    out1 = subprocess.run(
-        [sys.executable, "-m", "sources.wikidata_museums.adapter",
-         "normalize", str(FIXTURE), "--fetched-at", FIXED.isoformat()],
-        capture_output=True, text=True, check=True,
-    )
-    out2 = subprocess.run(
-        [sys.executable, "-m", "sources.wikidata_museums.adapter",
-         "normalize", str(FIXTURE), "--fetched-at", FIXED.isoformat()],
-        capture_output=True, text=True, check=True,
-    )
+    env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
+    cmd = [sys.executable, "-m", "sources.wikidata_museums.adapter",
+           "normalize", str(FIXTURE), "--fetched-at", FIXED.isoformat()]
+    out1 = subprocess.run(cmd, capture_output=True, text=True, check=True,
+                          cwd=str(REPO_ROOT), env=env)
+    out2 = subprocess.run(cmd, capture_output=True, text=True, check=True,
+                          cwd=str(REPO_ROOT), env=env)
     assert out1.returncode == 0 and out1.stderr == ""
     lines = out1.stdout.strip().split("\n")
     assert len(lines) == 2
@@ -1179,6 +1204,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from collections.abc import Iterator
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1211,8 +1237,14 @@ SELECT ?item ?itemLabel ?coord ?website WHERE {
 
 def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
     fetched = datetime.now(timezone.utc)  # start of fetch
-    url = f"{MANIFEST.endpoint}?format=json&query={httpx.QueryParams({'q': SPARQL})['q']}"
-    checksum = download(url, output, client=client, sleep=__import__("time").sleep)
+    # Pass params to httpx so the SPARQL query is correctly percent-encoded.
+    checksum = download(
+        MANIFEST.endpoint or "",
+        output,
+        client=client,
+        sleep=time.sleep,
+        params={"format": "json", "query": SPARQL},
+    )
     return SnapshotMetadata(
         source_id=MANIFEST.id,
         endpoint=MANIFEST.endpoint or "",
