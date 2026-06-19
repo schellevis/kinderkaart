@@ -41,8 +41,10 @@ Plan 3: complete (commits 8b77aa6..8a42252, opus review found C1/I1/I2/M1, fixed
 - Architecture simplified: fully static on GitHub Pages (no Vercel/PMTiles/Releases). Real browser render-latency deferred to Plan 5 (Playwright).
 
 ## Plan 4 — Build + Publish (docs/superpowers/plans/2026-06-19-kinderkaart-build-publish.md)
-- [ ] Task 1: shared fnv1a hash
-- [ ] Task 2: points-index builder
-- [ ] Task 3: detail-shard builder + lookup
-- [ ] Task 4: publish-gate
-- [ ] Task 5: build CLI (artifacts + manifest + last-known-good)
+- [x] Task 1: shared fnv1a hash
+- [x] Task 2: points-index builder
+- [x] Task 3: detail-shard builder + lookup
+- [x] Task 4: publish-gate
+- [x] Task 5: build CLI (artifacts + manifest + last-known-good)
+
+Plan 4: complete (commits 032258b..83cb076, 91 tests green). END-TO-END SMOKE PASSED: 5 fixtures -> 9 SourcePOI -> merge -> 9 CanonicalPOI -> artifacts (points/detail/license/manifest) with correct category counts.
