@@ -4,15 +4,20 @@
  */
 
 import { Favorites } from "../lib/favorites.js";
+import { safeHttpUrl } from "../lib/url.js";
 
-const CAT_COLORS: Record<string, string> = {
-  playground: "#F2994A",
+/**
+ * Darker text/border colors for category chips — ≥4.5:1 contrast on #FBFAF7/white (WCAG AA).
+ * The bright fill colors listed above fail AA for text; these darker variants pass.
+ */
+const CAT_CHIP_COLORS: Record<string, string> = {
+  playground: "#9A5A00",
   museum: "#6C5CE7",
-  zoo: "#27AE60",
-  petting_zoo: "#8D6E63",
-  pool: "#2D9CDB",
-  play_park: "#EB5757",
-  restaurant_kidfriendly: "#F2C94C",
+  zoo: "#1A7A40",
+  petting_zoo: "#6B4E45",
+  pool: "#1A6899",
+  play_park: "#C0392B",
+  restaurant_kidfriendly: "#9A7A00",
 };
 
 const CAT_GLYPHS: Record<string, string> = {
@@ -80,12 +85,17 @@ function field(label: string, value: string | null | undefined, isLink = false):
     val.textContent = UNKNOWN;
     val.classList.add("unknown");
   } else if (isLink) {
-    const a = document.createElement("a");
-    a.href = value;
-    a.textContent = value;
-    a.target = "_blank";
-    a.rel = "noopener noreferrer";
-    val.appendChild(a);
+    const safe = safeHttpUrl(value);
+    if (safe !== null) {
+      const a = document.createElement("a");
+      a.href = safe;
+      a.textContent = value;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      val.appendChild(a);
+    } else {
+      val.textContent = value;
+    }
   } else {
     val.textContent = value;
   }
@@ -151,9 +161,10 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
   for (const cat of opts.record.categories) {
     const chip = document.createElement("span");
     chip.className = "detail-cat-chip";
-    const color = CAT_COLORS[cat] ?? "#9E9E9E";
-    chip.style.color = color;
-    chip.style.borderColor = color;
+    // Use darker variant for text/border (AA contrast), bright color only for background hint
+    const chipColor = CAT_CHIP_COLORS[cat] ?? "#6B7280";
+    chip.style.color = chipColor;
+    chip.style.borderColor = chipColor;
     chip.textContent = (CAT_GLYPHS[cat] ?? "") + " " + (CAT_LABELS[cat] ?? cat);
     cats.appendChild(chip);
   }
@@ -201,13 +212,18 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
     for (const src of opts.record.sources) {
       const srcLine = document.createElement("div");
       if (src.source_url) {
-        const a = document.createElement("a");
-        a.href = src.source_url;
-        a.textContent = src.source_id;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.style.color = "var(--color-accent)";
-        srcLine.appendChild(a);
+        const safe = safeHttpUrl(src.source_url);
+        if (safe !== null) {
+          const a = document.createElement("a");
+          a.href = safe;
+          a.textContent = src.source_id;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.style.color = "var(--color-accent)";
+          srcLine.appendChild(a);
+        } else {
+          srcLine.textContent = src.source_id;
+        }
       } else {
         srcLine.textContent = src.source_id;
       }

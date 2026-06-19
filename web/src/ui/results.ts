@@ -41,7 +41,7 @@ export interface ResultsOptions {
 }
 
 export function renderResults(container: HTMLElement, opts: ResultsOptions): void {
-  container.innerHTML = "";
+  while (container.firstChild) container.removeChild(container.firstChild);
 
   if (opts.points.length === 0) {
     const empty = document.createElement("p");
@@ -52,10 +52,10 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
   }
 
   for (const pt of opts.points) {
-    const item = document.createElement("div");
+    const item = document.createElement("button");
+    item.type = "button";
     item.className = "result-item";
     item.setAttribute("role", "listitem");
-    item.setAttribute("tabindex", "0");
     item.dataset.poiId = pt.poiId;
 
     if (pt.poiId === opts.selectedId) {

@@ -70,13 +70,18 @@ async function bootstrap(): Promise<void> {
       const licRes = await fetch(cm.paths.license);
       if (licRes.ok) {
         const lic = await licRes.json();
-        if (Array.isArray(lic)) {
-          licenseText = lic
-            .map((s: { name?: string; license?: string }) =>
-              s.name ? `${s.name} (${s.license ?? "CC-BY"})` : ""
+        if (lic && typeof lic === "object" && !Array.isArray(lic)) {
+          // license.json is an object keyed by source_id
+          const attributions = Array.from(
+            new Set(
+              Object.values(lic as Record<string, { attribution?: string | null }>)
+                .map((s) => s.attribution ?? null)
+                .filter((a): a is string => a !== null)
             )
-            .filter(Boolean)
-            .join(", ");
+          );
+          if (attributions.length > 0) {
+            licenseText = attributions.join(" · ");
+          }
         }
       }
     } catch {
@@ -465,10 +470,10 @@ function buildUI(
   }
 
   // ── Handle URL deep-link for poi ──
-  const urlPoi = parseUrlState().selectedPoiId;
+  const urlPoi = store.get().selectedPoiId;
   if (urlPoi) {
-    // Open detail after a short delay (map needs to settle)
-    setTimeout(() => selectPoi(urlPoi), 500);
+    // Wait for the map to finish its initial tile-load before flying to the POI
+    map.once("idle", () => selectPoi(urlPoi));
   }
 
   // ── Initial render ──

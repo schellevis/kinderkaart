@@ -198,10 +198,6 @@ export function updateClusterData(
   });
 }
 
-export function setPointColors(_catColors: Record<string, string>): void {
-  // Colors are set per-feature via properties — for now use accent color for all
-  // Future: use expressions based on cats[0]
-}
 
 export const LAYERS = {
   GEO_SOURCE,

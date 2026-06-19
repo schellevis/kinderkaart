@@ -22,6 +22,8 @@ const POINTS: Point[] = [
   makePoint("id:3", "Museum van Loon"),
   makePoint("id:4", "Madurodam Den Haag"),
   makePoint("id:5", "Speeltuinen Rotterdam"),
+  makePoint("id:6", "Café de Parel"),
+  makePoint("id:7", "Münster Kinderspielplatz"),
 ];
 
 describe("buildIndex / query", () => {
@@ -74,5 +76,19 @@ describe("buildIndex / query", () => {
     const idx = buildIndex(POINTS);
     const results = idx.query("zoo");
     expect(typeof results[0]).toBe("string");
+  });
+
+  it("diacritic normalization — accented name matches un-accented query", () => {
+    const idx = buildIndex(POINTS);
+    // "Café de Parel" in index; query without accent should still match
+    expect(idx.query("cafe")).toContain("id:6");
+    expect(idx.query("Cafe")).toContain("id:6");
+  });
+
+  it("diacritic normalization — un-accented name matches accented query", () => {
+    const idx = buildIndex(POINTS);
+    // Accented query normalizes to plain; "Münster" → "munster"
+    expect(idx.query("Münster")).toContain("id:7");
+    expect(idx.query("munster")).toContain("id:7");
   });
 });

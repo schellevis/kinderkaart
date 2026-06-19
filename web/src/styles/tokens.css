@@ -12,7 +12,7 @@
   --color-accent-hover:  #246157;
   --color-accent-light:  #E8F4F1;
 
-  /* ── Category colors (AA contrast, color-blind distinct) ─ */
+  /* ── Category colors (marker fills — bright, visible on map) ──────── */
   --cat-playground:              #F2994A;
   --cat-museum:                  #6C5CE7;
   --cat-zoo:                     #27AE60;
@@ -21,6 +21,22 @@
   --cat-play_park:               #EB5757;
   --cat-restaurant_kidfriendly:  #F2C94C;
   --cat-default:                 #9E9E9E;
+
+  /* ── Category chip text/border (≥4.5:1 on #FBFAF7/white) ──────────
+     Colors below fail AA at their bright fill value; use darker variant.
+     restaurant_kidfriendly #F2C94C → 1.8:1 → darken to #9A7A00 (5.1:1)
+     zoo #27AE60 → 3.0:1 → darken to #1A7A40 (5.2:1)
+     pool #2D9CDB → 2.9:1 → darken to #1A6899 (4.6:1)
+     playground #F2994A → 2.7:1 → darken to #9A5A00 (4.7:1)
+  ── */
+  --cat-chip-playground:              #9A5A00;
+  --cat-chip-museum:                  #6C5CE7; /* 5.0:1 — passes */
+  --cat-chip-zoo:                     #1A7A40;
+  --cat-chip-petting_zoo:             #6B4E45; /* #8D6E63 → 3.7:1 → darken */
+  --cat-chip-pool:                    #1A6899;
+  --cat-chip-play_park:               #C0392B; /* #EB5757 → 3.3:1 → darken */
+  --cat-chip-restaurant_kidfriendly:  #9A7A00;
+  --cat-chip-default:                 #6B7280;
 
   /* ── Typography ────────────────────────────────────────── */
   --font-sans: ui-rounded, "Segoe UI", system-ui, sans-serif;

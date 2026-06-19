@@ -11,6 +11,17 @@ interface SearchIndex {
 }
 
 /**
+ * Normalizes a string for search: lowercase + strip diacritics.
+ * e.g. "Café" → "cafe", "Münster" → "munster"
+ */
+function normalizeForSearch(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
+/**
  * Build a search index from the given points.
  * Returns an object with a query() method.
  */
@@ -19,7 +30,7 @@ export function buildIndex(points: Point[]): SearchIndex {
   const prefixMap = new Map<string, Set<string>>();
 
   for (const pt of points) {
-    const normalized = pt.name.toLowerCase();
+    const normalized = normalizeForSearch(pt.name);
     const words = normalized.split(/\s+/).filter(Boolean);
     for (const word of words) {
       // Add all prefixes of each word (forward tokenize)
@@ -34,7 +45,7 @@ export function buildIndex(points: Point[]): SearchIndex {
   return {
     query(text: string, limit = 20): string[] {
       if (!text.trim()) return [];
-      const words = text.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      const words = normalizeForSearch(text).trim().split(/\s+/).filter(Boolean);
       if (words.length === 0) return [];
 
       // Intersect results across all query words
