@@ -33,3 +33,24 @@ def test_deeplink_lookup_without_tile():
 def test_deterministic():
     canon = [_canon(f"osm/node/{i}") for i in range(50)]
     assert build_detail(canon, 4) == build_detail(canon, 4)
+
+
+def test_tags_evidence_round_trips_into_detail():
+    ref = SourceRef(source_id="restaurants-agent", source_record_id="restaurants-agent:12345", fetched_at=T)
+    evidence = [{"signal": "speelhoek", "direct": True, "source_url": "https://example.com/kids", "evidence_date": "2026-06-19"}]
+    poi = CanonicalPOI(
+        poi_id="restaurants-agent/1",
+        name="Restaurant De Speelhoek",
+        categories=["restaurant_kidfriendly"],
+        lat=52.0907,
+        lon=5.1214,
+        country="nl",
+        contributing=[ref],
+        field_provenance={},
+        tags={"evidence": evidence},
+    )
+    detail = build_detail([poi], 1)
+    sh = list(detail.values())[0]
+    record = sh["restaurants-agent/1"]
+    assert "tags" in record
+    assert record["tags"]["evidence"] == evidence

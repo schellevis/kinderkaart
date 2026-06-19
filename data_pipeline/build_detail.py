@@ -31,6 +31,7 @@ def _detail(poi: CanonicalPOI) -> dict:
             for r in poi.contributing
         ],
         "last_updated": poi.last_updated.isoformat() if poi.last_updated else None,
+        "tags": poi.tags,
     }
 
 
