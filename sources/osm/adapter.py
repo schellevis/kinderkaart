@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import time
 from collections.abc import Iterator
 from datetime import datetime, timezone
@@ -17,6 +18,7 @@ ADAPTER_VERSION = "1"
 MANIFEST = load_manifest(Path(__file__).with_name("manifest.yaml"))
 # {"leisure": {"playground": [...]}, "tourism": {"zoo": [...]}, ...}
 _CATMAP: dict[str, dict[str, list[str]]] = {}
+_QID_RE = re.compile(r"^Q[1-9][0-9]*$")
 for _kv, _cats in MANIFEST.category_map.items():
     _k, _v = _kv.split("=", 1)
     _CATMAP.setdefault(_k, {})[_v] = _cats
@@ -67,6 +69,9 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             lat, lon, kind = c[0], c[1], "way"
         else:
             continue
+        ext: dict[str, str] = {}
+        if _QID_RE.match(tags.get("wikidata", "")):
+            ext["wikidata"] = tags["wikidata"]
         yield SourcePOI(
             source_id=MANIFEST.id,
             source_record_id=f"{kind}/{obj.id}",
@@ -75,6 +80,7 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             lat=lat, lon=lon, country=MANIFEST.country,
             fetched_at=fetched_at,
             field_provenance={"name": MANIFEST.id, "lat": MANIFEST.id, "lon": MANIFEST.id},
+            external_ids=ext,
         )
 
 

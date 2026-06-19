@@ -100,6 +100,7 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             source_url=f"http://www.wikidata.org/entity/{qid}",
             fetched_at=fetched_at,
             field_provenance=provenance,
+            external_ids={"wikidata": qid},
         )
 
 

@@ -30,6 +30,7 @@ def test_one_poi_per_distinct_qid():
     # multi-value website resolved by stable rule (lexicographically smallest)
     assert first.website == "https://rijksmuseum.example/en"
     assert first.field_provenance["website"] == "wikidata-museums"
+    assert first.external_ids == {"wikidata": "Q190804"}
 
 
 def test_missing_website_is_none():

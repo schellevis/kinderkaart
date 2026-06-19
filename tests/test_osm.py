@@ -16,6 +16,7 @@ def test_maps_node_and_way_skips_unmatched():
     assert play.name == "Speeltuin Vondelpark"
     assert abs(play.lat - 52.36) < 1e-6 and abs(play.lon - 4.885) < 1e-6
     assert play.source_id == "osm"
+    assert pois["node/1"].external_ids == {"wikidata": "Q42"}
 
     zoo = pois["way/100"]
     # petting_zoo wins; zoo also present -> both, deduped/ordered

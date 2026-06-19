@@ -132,6 +132,7 @@ class FacetFields(_Strict):
 class SourcePOI(FacetFields):
     source_id: str
     source_record_id: str
+    external_ids: dict[str, str] = Field(default_factory=dict)
     source_url: str | None = None
     source_date: date | None = None
     fetched_at: datetime
@@ -155,3 +156,28 @@ class SourcePOI(FacetFields):
         if v.tzinfo is None:
             raise ValueError("fetched_at must be timezone-aware")
         return v.astimezone(timezone.utc)
+
+
+class SourceRef(_Strict):
+    source_id: str
+    source_record_id: str
+    source_url: str | None = None
+    source_date: date | None = None
+    fetched_at: datetime
+
+    @field_validator("fetched_at")
+    @classmethod
+    def _utc(cls, v: datetime) -> datetime:
+        if v.tzinfo is None:
+            raise ValueError("fetched_at must be timezone-aware")
+        return v.astimezone(timezone.utc)
+
+
+class CanonicalPOI(FacetFields):
+    poi_id: str
+    external_ids: dict[str, str] = Field(default_factory=dict)
+    aliases: list[str] = Field(default_factory=list)
+    contributing: list[SourceRef]
+    field_provenance: dict[str, str] = Field(default_factory=dict)
+    last_updated: date | None = None
+    build_version: str | None = None

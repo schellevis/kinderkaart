@@ -96,3 +96,28 @@ def test_empty_name_rejected():
 def test_image_requires_license_fields():
     with pytest.raises(ValidationError):
         Image(url="https://x/y.jpg", source_page="https://x")
+
+
+def test_sourcepoi_external_ids_default_empty():
+    from data_pipeline.schema import SourcePOI
+    poi = SourcePOI(**_src())
+    assert poi.external_ids == {}
+
+
+def test_canonicalpoi_requires_contributing():
+    from datetime import datetime, timezone
+    from pydantic import ValidationError
+    from data_pipeline.schema import CanonicalPOI, SourceRef
+    ref = SourceRef(source_id="osm", source_record_id="node/1",
+                    fetched_at=datetime(2026, 6, 19, tzinfo=timezone.utc))
+    poi = CanonicalPOI(
+        poi_id="osm/node/1", name="A", categories=["playground"],
+        lat=52.0, lon=5.0, country="nl", contributing=[ref],
+        field_provenance={"name": "osm/node/1"},
+    )
+    assert poi.poi_id == "osm/node/1"
+    assert poi.aliases == [] and poi.external_ids == {}
+    with pytest.raises(ValidationError):
+        CanonicalPOI(poi_id="x", name="A", categories=["playground"], lat=52.0,
+                     lon=5.0, country="nl", contributing=[], field_provenance={},
+                     surprise=1)  # extra forbidden
