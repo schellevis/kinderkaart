@@ -10,8 +10,8 @@ dependencies = [
     "pyyaml>=6.0",
 ]
 
-[tool.uv]
-dev-dependencies = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "types-PyYAML>=6"]
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.11", "types-PyYAML>=6"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

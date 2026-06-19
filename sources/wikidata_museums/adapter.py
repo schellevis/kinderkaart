@@ -20,6 +20,7 @@ from data_pipeline.schema import SourcePOI
 
 ADAPTER_VERSION = "1"
 MANIFEST = load_manifest(Path(__file__).with_name("manifest.yaml"))
+CATEGORIES = sorted({c for cats in MANIFEST.category_map.values() for c in cats})
 _QID = re.compile(r"^Q[1-9][0-9]*$")
 
 SPARQL = """
@@ -90,7 +91,7 @@ def normalize(input: BinaryIO, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             source_id=MANIFEST.id,
             source_record_id=qid,
             name=rec["label"] or qid,
-            categories=["museum"],
+            categories=list(CATEGORIES),
             lat=lat,
             lon=lon,
             country=MANIFEST.country,

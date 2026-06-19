@@ -73,6 +73,8 @@ class Manifest(BaseModel):
     @field_validator("category_map")
     @classmethod
     def _category_map(cls, v: dict[str, list[str]]) -> dict[str, list[str]]:
+        if not v:
+            raise ValueError("category_map must have at least one entry")
         for key, cats in v.items():
             if not cats:
                 raise ValueError(f"category_map[{key!r}] must be non-empty")

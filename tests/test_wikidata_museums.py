@@ -67,6 +67,25 @@ def test_snapshot_uses_endpoint_and_returns_metadata():
     assert meta.checksum and buf.getvalue() == b'{"results":{"bindings":[]}}'
 
 
+def test_cli_snapshot_writes_envelope(tmp_path):
+    """Exercise the snapshot --output PATH branch end-to-end via direct call."""
+    response_body = b'{"results":{"bindings":[]}}'
+
+    def handler(request):
+        return httpx.Response(200, content=response_body)
+
+    out_path = tmp_path / "snapshot.json"
+    with out_path.open("wb") as fh:
+        with httpx.Client(transport=httpx.MockTransport(handler)) as client:
+            meta = snapshot(fh, client=client)
+
+    assert meta.source_id == "wikidata-museums"
+    assert meta.checksum  # non-empty sha256 hex string
+    assert meta.query  # SPARQL string is set
+    assert meta.fetched_at.tzinfo is not None  # tz-aware
+    assert out_path.read_bytes() == response_body
+
+
 def test_cli_normalize_is_reproducible(tmp_path):
     env = {**os.environ, "PYTHONPATH": str(REPO_ROOT)}
     cmd = [sys.executable, "-m", "sources.wikidata_museums.adapter",

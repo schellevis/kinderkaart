@@ -68,6 +68,8 @@ def test_age_constraints():
 def test_price_model_consistency_with_free():
     with pytest.raises(ValidationError):
         SourcePOI(**_src(free=True, price_model="paid"))
+    with pytest.raises(ValidationError):
+        SourcePOI(**_src(free=False, price_model="free"))
     ok = SourcePOI(**_src(free=True, price_model="free"))
     assert ok.price_model == "free"
 

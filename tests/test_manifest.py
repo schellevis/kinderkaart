@@ -47,6 +47,11 @@ def test_bad_runtime_rejected():
         Manifest(**_kwargs(runtime="lambda"))
 
 
+def test_category_map_must_have_at_least_one_entry():
+    with pytest.raises(ValidationError):
+        Manifest(**_kwargs(category_map={}))
+
+
 def test_category_map_must_use_known_nonempty_categories():
     with pytest.raises(ValidationError):
         Manifest(**_kwargs(category_map={"Q1": ["nope"]}))

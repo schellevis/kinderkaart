@@ -87,11 +87,30 @@ def download(
     sleep: SleepFn,
     params: dict | None = None,
 ) -> str:
-    resp = http_get(url, client=client, sleep=sleep, params=params)
+    """Stream-download *url* to *output*, returning a sha256 hex digest.
+
+    Note: this performs a single streamed attempt without the retry loop of
+    http_get.  Retry parity can be added in Plan 2 if needed.
+    """
     digest = hashlib.sha256()
-    for chunk in resp.iter_bytes():
-        output.write(chunk)
-        digest.update(chunk)
+    with client.stream(
+        "GET",
+        url,
+        params=params,
+        headers={"User-Agent": USER_AGENT},
+        timeout=30.0,
+        follow_redirects=True,
+    ) as resp:
+        if resp.status_code in RETRYABLE_STATUS:
+            raise httpx.HTTPStatusError(
+                f"retryable status {resp.status_code}",
+                request=resp.request,
+                response=resp,
+            )
+        resp.raise_for_status()
+        for chunk in resp.iter_bytes():
+            output.write(chunk)
+            digest.update(chunk)
     return digest.hexdigest()
 
 
