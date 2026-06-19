@@ -64,3 +64,8 @@ Plan 4: complete (commits 032258b..83cb076, 91 tests green). END-TO-END SMOKE PA
 Plan 5: complete (commits 4731f6a..ea65018). 78 unit tests, lint/typecheck/build clean, 20 e2e passed (desktop+mobile), perf <4000ms @4x throttle. C1/C2 XSS + C3 attribution + a11y fixed. Visually verified (screenshots). FlexSearch->hand-rolled index.
 
 Plan 6: complete (commits db68657..10aa1e3, 92 tests). Orchestrator smoke passes; data-refresh.yml (weekly cron) + deploy-pages.yml (workflow_dispatch ONLY, legal-gated) valid YAML, no injection. Runbook added.
+
+## Plan 7 — Agent restaurants
+Plan 7: complete (commits 21f65b0..500b7e5, 94 tests). Evidence gate (>=1 direct signal), codespace-only (excluded from CI), tags->detail. Example curated data only; real curation is manual.
+
+ALL 7 PLANS + 2 SPIKES COMPLETE.
