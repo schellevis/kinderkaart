@@ -1,0 +1,18 @@
+# EXAMPLE ONLY — replace with verified entries.
+# Each record needs ≥1 direct signal (kindermenu/speelhoek/kinderstoel/verschoontafel)
+# with a real source_url + evidence_date.
+# DO NOT commit unverified entries; the evidence gate drops records lacking a direct signal.
+
+- name: "Restaurant De Speelhoek (VOORBEELD)"
+  lat: 52.0907
+  lon: 5.1214
+  website: "https://example.com/speelhoek"
+  evidence:
+    - signal: speelhoek
+      direct: true
+      source_url: "https://example.com/speelhoek/kids"
+      evidence_date: "2026-06-19"
+    - signal: nabije_speeltuin
+      direct: false
+      source_url: "https://example.com/park"
+      evidence_date: "2026-06-19"

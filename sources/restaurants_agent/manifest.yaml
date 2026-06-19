@@ -1,0 +1,17 @@
+schema_version: 1
+id: restaurants-agent
+name: Kindvriendelijke restaurants (agent-gecureerd)
+country: nl
+endpoint: null
+license: CC-BY-4.0
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+license_evidence_date: "2026-06-19"
+republication_terms: "Curated compilation; each record cites its evidence source(s)"
+attribution: "Kinderkaart (gecureerd)"
+runtime: codespace-only
+update_frequency: manual
+expected_count: [0, 2000]
+contact_policy: "Manual curation; verify each record's direct evidence"
+category_map:
+  "restaurant_kidfriendly": [restaurant_kidfriendly]
+entrypoint: adapter.py
