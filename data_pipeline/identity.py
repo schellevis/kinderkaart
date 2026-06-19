@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -42,81 +43,136 @@ class Registry:
         return out
 
     def assign(self, clusters: list[list[str]]) -> dict[int, str]:
-        m2id = self._member_to_id()
-        # For each cluster, find the set of prior ids its members map to.
-        cluster_ids: list[set[str]] = []
-        for members in clusters:
-            cluster_ids.append({m2id[m] for m in members if m in m2id})
+        # Step 1: active member-key -> poi_id, and prior members per active id.
+        m2id: dict[str, str] = {}
+        prior_members: dict[str, set[str]] = {}
+        for pid, e in self.entries.items():
+            if e["status"] == "active":
+                prior_members[pid] = set(e["members"])
+                for m in e["members"]:
+                    m2id[m] = pid
 
-        # Detect splits: a prior id referenced by >1 cluster.
-        # Pre-compute split resolutions: for each split id, which cluster wins?
-        id_to_clusters: dict[str, list[int]] = {}
-        for idx, ids in enumerate(cluster_ids):
-            for pid in ids:
-                id_to_clusters.setdefault(pid, []).append(idx)
+        # Step 2: prior ids referenced by each cluster.
+        cluster_member_sets: list[set[str]] = [set(c) for c in clusters]
+        cluster_refs: list[set[str]] = [
+            {m2id[m] for m in members if m in m2id} for members in clusters
+        ]
+        referenced: set[str] = set()
+        for refs in cluster_refs:
+            referenced |= refs
 
-        # split_winner[pid] = winning cluster idx, or None if tie (tombstone all)
-        split_winner: dict[str, int | None] = {}
-        for pid, cluster_idxs in id_to_clusters.items():
-            if len(cluster_idxs) <= 1:
-                continue
-            prior_members = set(self.entries[pid]["members"])
-            # (overlap_count, -cluster_idx) for stable sort: larger overlap wins,
-            # tie-break by smaller cluster index (deterministic)
-            overlaps = sorted(
-                ((len(prior_members & set(clusters[i])), -i, i) for i in cluster_idxs),
-                reverse=True,
+        # Step 3: for each referenced prior id, which cluster (if any) may claim it.
+        # claimable[pid] = cluster index, or None if ambiguous tie.
+        claimable: dict[str, int | None] = {}
+        for pid in sorted(referenced, key=_id_rank):
+            pmembers = prior_members[pid]
+            overlaps = [
+                (len(pmembers & cluster_member_sets[i]), i)
+                for i in range(len(clusters))
+            ]
+            maxov = max(ov for ov, _ in overlaps)
+            top = sorted(
+                (i for ov, i in overlaps if ov == maxov),
+                key=lambda i: clusters[i][0],
             )
-            top, second = overlaps[0], overlaps[1]
-            if top[0] == second[0]:
-                # Ambiguous tie -> tombstone, all mint new
-                self.entries[pid]["status"] = "tombstone"
-                self.entries[pid]["members"] = []
-                split_winner[pid] = None
+            if len(top) == 1:
+                claimable[pid] = top[0]
             else:
-                split_winner[pid] = top[2]
+                claimable[pid] = None  # ambiguous
 
-        result: dict[int, str] = {}
-        seen_input_members: set[str] = set()
-        # Process clusters in deterministic order (by sorted first member).
+        # Step 4: group claims per cluster.
+        cluster_claims: dict[int, list[str]] = {}
+        for pid, ci in claimable.items():
+            if ci is not None:
+                cluster_claims.setdefault(ci, []).append(pid)
+
+        # Step 5: per cluster, pick the kept id (highest _id_rank claim) and
+        # identify merge losers.
+        kept_id: dict[int, str] = {}
+        merge_losers: set[str] = set()
+        loser_to_survivor: dict[str, str] = {}
         order = sorted(range(len(clusters)), key=lambda i: clusters[i][0])
         for idx in order:
+            claims = cluster_claims.get(idx)
+            if not claims:
+                continue
+            claims_sorted = sorted(claims, key=_id_rank)
+            keep = claims_sorted[0]
+            kept_id[idx] = keep
+            for loser in claims_sorted[1:]:
+                merge_losers.add(loser)
+                loser_to_survivor[loser] = keep
+
+        # Step 6: tombstone set computed BEFORE minting.
+        ambiguous = {pid for pid, ci in claimable.items() if ci is None}
+        deletions = {pid for pid in prior_members if pid not in referenced}
+        tombstoned: set[str] = ambiguous | merge_losers | deletions
+
+        # Step 7: mint ids for clusters with no kept id.
+        used_ids: set[str] = set(kept_id.values())
+        minted_id: dict[int, str] = {}
+        for idx in order:
+            if idx in kept_id:
+                continue
             members = clusters[idx]
-            seen_input_members.update(members)
-            prior = sorted(cluster_ids[idx], key=_id_rank)
+            base = min(members, key=_member_rank)
+            if base not in used_ids and base not in tombstoned:
+                pid = base
+            else:
+                digest = hashlib.sha1("|".join(sorted(members)).encode()).hexdigest()[:8]
+                pid = f"{base}#{digest}"
+            minted_id[idx] = pid
+            used_ids.add(pid)
 
-            if not prior:  # mint
-                pid = _mint_id(members)
-            elif len(prior) == 1:
-                pid = prior[0]
-                if pid in split_winner:  # split scenario
-                    winner_idx = split_winner[pid]
-                    if winner_idx is None or winner_idx != idx:
-                        # This cluster is not the winner (or tie) -> mint new id
-                        pid = _mint_id(members)
-                    # else: this cluster is the winner -> keep pid
-            else:  # merge
-                survivor = prior[0]
-                for loser in prior[1:]:
-                    self.entries[survivor]["aliases"] = sorted(
-                        set(self.entries[survivor]["aliases"]) | {loser}
-                        | set(self.entries[loser]["aliases"])
-                    )
-                    self.entries[loser]["status"] = "tombstone"
-                    self.entries[loser]["members"] = []
-                pid = survivor
+        # Step 8: apply state deterministically.
+        result: dict[int, str] = {}
 
-            self.entries.setdefault(pid, {"members": [], "aliases": [], "status": "active"})
+        # Helper: reactivate an id (kept or minted) and strip it from any alias list.
+        def _activate(pid: str, members: list[str]) -> None:
+            self.entries.setdefault(
+                pid, {"members": [], "aliases": [], "status": "active"}
+            )
             self.entries[pid]["status"] = "active"
             self.entries[pid]["members"] = sorted(set(members))
+            # I2 fix: an active id must not remain an alias of any other entry.
+            for other, e in self.entries.items():
+                if other == pid:
+                    continue
+                if pid in e["aliases"]:
+                    e["aliases"] = [a for a in e["aliases"] if a != pid]
+
+        for idx in order:
+            if idx in kept_id:
+                pid = kept_id[idx]
+                _activate(pid, clusters[idx])
+            else:
+                pid = minted_id[idx]
+                _activate(pid, clusters[idx])
+                self.entries[pid]["aliases"] = []
             result[idx] = pid
 
-        # Deletion: previously-active ids with no members in this input -> tombstone.
-        for pid, e in self.entries.items():
-            if e["status"] == "active" and pid not in result.values():
-                if not any(m in seen_input_members for m in e["members"]):
-                    e["status"] = "tombstone"
-                    e["members"] = []
+        # Merge losers: tombstone and fold into survivor's aliases (transitively).
+        for loser in sorted(merge_losers, key=_id_rank):
+            survivor = loser_to_survivor[loser]
+            transitive = {loser} | set(self.entries[loser].get("aliases", []))
+            self.entries[survivor]["aliases"] = sorted(
+                set(self.entries[survivor]["aliases"]) | transitive
+            )
+            self.entries[loser]["status"] = "tombstone"
+            self.entries[loser]["members"] = []
+
+        # Ambiguous + deletion pids: tombstone with no alias added.
+        for pid in (ambiguous | deletions):
+            self.entries[pid]["status"] = "tombstone"
+            self.entries[pid]["members"] = []
+
+        # Step 9: invariants.
+        values = list(result.values())
+        assert len(set(values)) == len(values), "duplicate poi_id assigned"
+        active_ids = {p for p, e in self.entries.items() if e["status"] == "active"}
+        for p, e in self.entries.items():
+            for a in e["aliases"]:
+                assert a not in active_ids, f"active id {a} appears as alias of {p}"
         return result
 
     def aliases_for(self, poi_id: str) -> list[str]:

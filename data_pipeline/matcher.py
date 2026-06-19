@@ -10,6 +10,12 @@ from data_pipeline.merge_config import (
 )
 from data_pipeline.schema import SourcePOI
 from data_pipeline.textnorm import name_similarity, website_host
+from data_pipeline.vocab import CATEGORIES
+
+# Fail fast at import if any category lacks a match radius (M1).
+assert CATEGORIES <= set(MATCH_RADIUS_M), (
+    f"categories without a match radius: {CATEGORIES - set(MATCH_RADIUS_M)}"
+)
 
 
 def _shares_external_id(a: SourcePOI, b: SourcePOI) -> bool:
