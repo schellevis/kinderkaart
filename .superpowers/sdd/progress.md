@@ -55,3 +55,8 @@ Plan 4: complete (commits 032258b..83cb076, 91 tests green). END-TO-END SMOKE PA
 - [ ] Task 3: search + cluster wrappers
 - [ ] Task 4: MapLibre map + UI shell
 - [ ] Task 5: Playwright e2e (oracle + perf)
+
+### PENDING FIX (Plan 5 review): security
+- XSS: web/src/ui/detail.ts assigns website + source_url to a.href without scheme allowlist.
+  Spec §10 requires http/https only. Fix: validate via `new URL(...)`, allow only http(s),
+  else render as text. (flagged by automated commit security review)
