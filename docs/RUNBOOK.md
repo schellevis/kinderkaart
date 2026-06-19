@@ -17,23 +17,26 @@ These sources require interactive credentials or a paid API key and are **not ru
 
 1. Open the repository in a GitHub Codespace (or a local dev environment with credentials set up).
 
-2. Run the adapter's snapshot + normalize directly — for example, for `museum-nl`:
+2. Run the adapter's normalize directly. The implemented codespace-only source is
+   `restaurants-agent` (curated; see `sources/restaurants_agent/README.md`):
 
    ```bash
-   # Snapshot raw data to a temp file
-   uv run python -m sources.museum_nl.adapter snapshot --out /tmp/museum_nl_raw.json
-
-   # Normalize to NDJSON (inspect output before including it)
-   uv run python -m sources.museum_nl.adapter normalize \
-       /tmp/museum_nl_raw.json \
-       --out /tmp/museum_nl.ndjson
+   # Curate sources/restaurants_agent/curated.yaml first (each record needs >=1 direct signal),
+   # then normalize it to NDJSON (inspect output before including it):
+   uv run python -m sources.restaurants_agent.adapter normalize \
+       sources/restaurants_agent/curated.yaml \
+       --fetched-at "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)" > /tmp/restaurants.ndjson
    ```
+
+   > **Note:** the `museum.nl` source is **not yet implemented** — it is release-gated (see below).
+   > When/if it is added (a `sources/museum_nl/` module with a `snapshot`+`normalize` adapter), it
+   > follows the same `snapshot --output PATH` / `normalize PATH` contract as the other adapters.
 
 3. Re-run the orchestrator with `--include` to inject the NDJSON before the merge step. The `--include` flag limits which adapters run via their manifests; for a source not wired as `github-action` you can also pass the pre-built NDJSON directly:
 
    ```bash
    # Copy the NDJSON into the work dir that the orchestrator will pick up
-   cp /tmp/museum_nl.ndjson /tmp/work/museum-nl.ndjson
+   cp /tmp/restaurants.ndjson /tmp/work/restaurants-agent.ndjson
 
    # Then run the orchestrator pointing at the existing work dir
    # (sources with existing NDJSON are merged; others are fetched live)
@@ -45,16 +48,15 @@ These sources require interactive credentials or a paid API key and are **not ru
        --data-version "$(date -u +%Y.%m.%d)-local"
    ```
 
-   After Plan 7 (agent restaurants) lands, the curated NDJSON for that source is added to `/tmp/work/` the same way.
-
 ---
 
 ## Legal release gate for museum.nl
 
-Before museum.nl data can be published:
+museum.nl has **no source module yet** (deliberately not built — RCE + Wikidata already cover
+museums under open licences). Before any museum.nl data could be published:
 
 1. Obtain written permission from museum.nl to redistribute their POI data under the project's combined-DB license terms.
-2. Update `sources/museum_nl/manifest.yaml`: change `runtime: codespace-only` to `runtime: github-action` and add the permission evidence date.
+2. Add a `sources/museum_nl/` module (manifest + adapter, same contract as the others). Start it `runtime: codespace-only`; flip to `github-action` only once permission + evidence date are recorded.
 3. Satisfy the ODbL combined-DB review for the full dataset (spec §11).
 4. Only then trigger `deploy-pages.yml` (see below).
 
