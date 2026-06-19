@@ -111,6 +111,25 @@ def test_snapshot_metadata_is_strict():
         )
 
 
+def test_download_retries_on_503_then_streams():
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(503)
+        return httpx.Response(200, content=b"payload")
+
+    from data_pipeline.adapter_base import download
+    buf = io.BytesIO()
+    with _client(handler) as client:
+        checksum = download("https://x/f", buf, client=client, sleep=_no_sleep, max_attempts=3)
+    assert calls["n"] == 2
+    assert buf.getvalue() == b"payload"
+    import hashlib
+    assert checksum == hashlib.sha256(b"payload").hexdigest()
+
+
 def test_download_passes_params_and_returns_checksum():
     import hashlib
 

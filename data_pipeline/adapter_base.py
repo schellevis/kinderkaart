@@ -86,32 +86,37 @@ def download(
     client: httpx.Client,
     sleep: SleepFn,
     params: dict | None = None,
+    max_attempts: int = 3,
+    backoff: float = 0.5,
+    timeout: float = 30.0,
 ) -> str:
-    """Stream-download *url* to *output*, returning a sha256 hex digest.
-
-    Note: this performs a single streamed attempt without the retry loop of
-    http_get.  Retry parity can be added in Plan 2 if needed.
-    """
-    digest = hashlib.sha256()
-    with client.stream(
-        "GET",
-        url,
-        params=params,
-        headers={"User-Agent": USER_AGENT},
-        timeout=30.0,
-        follow_redirects=True,
-    ) as resp:
-        if resp.status_code in RETRYABLE_STATUS:
-            raise httpx.HTTPStatusError(
-                f"retryable status {resp.status_code}",
-                request=resp.request,
-                response=resp,
-            )
-        resp.raise_for_status()
-        for chunk in resp.iter_bytes():
-            output.write(chunk)
-            digest.update(chunk)
-    return digest.hexdigest()
+    hdrs = {"User-Agent": USER_AGENT}
+    last_exc: Exception | None = None
+    for attempt in range(1, max_attempts + 1):
+        try:
+            with client.stream(
+                "GET", url, params=params, headers=hdrs, timeout=timeout,
+                follow_redirects=True,
+            ) as resp:
+                if resp.status_code in RETRYABLE_STATUS:
+                    last_exc = httpx.HTTPStatusError(
+                        f"retryable status {resp.status_code}",
+                        request=resp.request, response=resp,
+                    )
+                    if attempt < max_attempts:
+                        sleep(_retry_after(resp, backoff * 2 ** (attempt - 1)))
+                    continue
+                resp.raise_for_status()
+                digest = hashlib.sha256()
+                for chunk in resp.iter_bytes():
+                    output.write(chunk)
+                    digest.update(chunk)
+                return digest.hexdigest()
+        except httpx.HTTPError as exc:
+            last_exc = exc
+            if attempt < max_attempts:
+                sleep(backoff * 2 ** (attempt - 1))
+    raise RuntimeError(f"GET {url} failed after {max_attempts} attempts") from last_exc
 
 
 def write_ndjson(pois: Iterable[SourcePOI], out=None) -> int:
@@ -130,7 +135,7 @@ class _SnapshotFn(Protocol):
 
 
 class _NormalizeFn(Protocol):
-    def __call__(self, input: BinaryIO, *, fetched_at: datetime) -> Iterable[SourcePOI]: ...
+    def __call__(self, path: Path, *, fetched_at: datetime) -> Iterable[SourcePOI]: ...
 
 
 def run_cli(snapshot: _SnapshotFn, normalize: _NormalizeFn) -> None:
@@ -156,5 +161,4 @@ def run_cli(snapshot: _SnapshotFn, normalize: _NormalizeFn) -> None:
             fetched = meta.fetched_at
         if fetched.tzinfo is None:
             raise SystemExit("fetched_at must be timezone-aware")
-        with open(args.path, "rb") as fh:
-            write_ndjson(normalize(fh, fetched_at=fetched))
+        write_ndjson(normalize(Path(args.path), fetched_at=fetched))

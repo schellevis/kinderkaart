@@ -61,8 +61,9 @@ def _parse_point(wkt: str) -> tuple[float, float]:
     return float(lat_s), float(lon_s)
 
 
-def normalize(input: BinaryIO, *, fetched_at: datetime) -> Iterator[SourcePOI]:
-    data = json.load(input)  # adapter-specific: Wikidata JSON is read fully into memory
+def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
+    with path.open("rb") as fh:
+        data = json.load(fh)  # adapter-specific: Wikidata JSON read fully into memory
     # Consolidate multi-row bindings per QID deterministically.
     by_qid: dict[str, dict] = {}
     order: list[str] = []

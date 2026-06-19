@@ -18,7 +18,7 @@ FIXED = datetime(2026, 6, 19, tzinfo=timezone.utc)
 
 
 def test_one_poi_per_distinct_qid():
-    pois = list(normalize(FIXTURE.open("rb"), fetched_at=FIXED))
+    pois = list(normalize(FIXTURE, fetched_at=FIXED))
     assert len(pois) == 2  # duplicate Q190804 row consolidated
     first = pois[0]
     assert first.source_id == "wikidata-museums"
@@ -33,19 +33,20 @@ def test_one_poi_per_distinct_qid():
 
 
 def test_missing_website_is_none():
-    pois = list(normalize(FIXTURE.open("rb"), fetched_at=FIXED))
+    pois = list(normalize(FIXTURE, fetched_at=FIXED))
     assert pois[1].website is None
     assert "website" not in pois[1].field_provenance
 
 
-def test_invalid_qid_raises():
-    bad = json.dumps({"results": {"bindings": [{
+def test_invalid_qid_raises(tmp_path):
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"results": {"bindings": [{
         "item": {"value": "http://www.wikidata.org/entity/NOTAQID"},
         "itemLabel": {"value": "x"},
         "coord": {"value": "Point(5 52)"},
-    }]}}).encode()
+    }]}}))
     with pytest.raises(ValueError):
-        list(normalize(io.BytesIO(bad), fetched_at=FIXED))
+        list(normalize(bad, fetched_at=FIXED))
 
 
 def test_manifest_matches_package_dir():

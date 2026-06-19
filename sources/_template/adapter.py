@@ -7,7 +7,7 @@ Conventions:
 Contract (spec §5):
   snapshot(output, *, client) -> SnapshotMetadata
       Download raw bytes chunked into `output`; return the envelope.
-  normalize(input, *, fetched_at) -> Iterator[SourcePOI]
+  normalize(path, *, fetched_at) -> Iterator[SourcePOI]
       Stream validated SourcePOI. Map each source field and record its origin in
       `field_provenance` for EVERY field you actually populate.
 
@@ -37,9 +37,9 @@ def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
     raise NotImplementedError("download raw source bytes into `output`")
 
 
-def normalize(input: BinaryIO, *, fetched_at: datetime) -> Iterator[SourcePOI]:
-    raise NotImplementedError("map raw records to SourcePOI objects")
-    yield  # pragma: no cover  (keeps this a generator)
+def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
+    raise NotImplementedError("read `path` and map records to SourcePOI objects")
+    yield  # pragma: no cover
 
 
 if __name__ == "__main__":
