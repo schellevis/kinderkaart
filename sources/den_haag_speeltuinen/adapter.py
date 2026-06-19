@@ -35,9 +35,11 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
         lat, lon = representative_point(feat["geometry"])
         props = feat.get("properties", {})
         name = props.get("straatnaam") or props.get("naam") or f"Speeltuin {props.get('buurt', i)}"
+        # Use coordinate-based id for stability across re-fetches; Opendatasoft has no
+        # stable native feature id, so index-based ids would break the identity registry.
         yield SourcePOI(
             source_id=MANIFEST.id,
-            source_record_id=f"{MANIFEST.id}:{i}",
+            source_record_id=f"{MANIFEST.id}:{round(lat, 5)},{round(lon, 5)}",
             name=name,
             categories=list(CATEGORIES),
             lat=lat, lon=lon, country=MANIFEST.country,

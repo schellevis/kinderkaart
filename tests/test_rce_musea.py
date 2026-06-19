@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
+from data_pipeline.schema import Address
 from sources.rce_musea.adapter import MANIFEST, normalize
 
 FIXTURE = Path(__file__).parent / "fixtures" / "rce_musea_response.json"
@@ -19,7 +20,7 @@ def test_normalize_reprojects_and_maps():
     # RD (121687, 487462) ~ Amsterdam centre
     assert abs(p.lat - 52.36) < 0.05
     assert abs(p.lon - 4.89) < 0.05
-    assert p.address == {"city": "Amsterdam", "postcode": "1071 ZC"}
+    assert p.address == Address(city="Amsterdam", postcode="1071 ZC")
     assert p.field_provenance["lat"] == "rce-musea"
 
 

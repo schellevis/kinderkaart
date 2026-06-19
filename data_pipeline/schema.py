@@ -52,7 +52,7 @@ class FacetFields(_Strict):
     lat: float
     lon: float
     country: str
-    address: dict[str, str] | None = None
+    address: Address | None = None
 
     indoor: bool | None = None
     free: bool | None = None

@@ -12,7 +12,7 @@ import httpx
 from data_pipeline.adapter_base import SnapshotMetadata, download, run_cli
 from data_pipeline.geo import rd_to_wgs84
 from data_pipeline.manifest import load_manifest
-from data_pipeline.schema import SourcePOI
+from data_pipeline.schema import Address, SourcePOI
 
 ADAPTER_VERSION = "1"
 MANIFEST = load_manifest(Path(__file__).with_name("manifest.yaml"))
@@ -62,7 +62,7 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             name=props.get("naam") or str(feat["id"]),
             categories=list(CATEGORIES),
             lat=lat, lon=lon, country=MANIFEST.country,
-            address=addr if addr else None,
+            address=Address(**addr) if addr else None,
             fetched_at=fetched_at, field_provenance=prov,
         )
 
