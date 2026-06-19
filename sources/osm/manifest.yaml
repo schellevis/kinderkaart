@@ -1,0 +1,20 @@
+schema_version: 1
+id: osm
+name: OpenStreetMap (NL)
+country: nl
+endpoint: "https://download.geofabrik.de/europe/netherlands-latest.osm.pbf"
+license: ODbL
+license_url: "https://opendatacommons.org/licenses/odbl/1-0/"
+license_evidence_date: "2026-06-19"
+republication_terms: "ODbL share-alike; attribute © OpenStreetMap contributors"
+attribution: "© OpenStreetMap contributors"
+runtime: github-action
+update_frequency: weekly
+expected_count: [30000, 60000]
+contact_policy: "User-Agent with contact; honor 429/Retry-After"
+category_map:
+  "leisure=playground": [playground]
+  "tourism=zoo": [zoo]
+  "zoo=petting_zoo": [petting_zoo]
+  "leisure=water_park": [play_park]
+entrypoint: adapter.py
