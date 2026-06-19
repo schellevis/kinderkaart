@@ -1,10 +1,12 @@
 # Kinderkaart — Ontwerpdocument
 
 **Datum:** 2026-06-19
-**Status:** Concept — kernkeuzes gemaakt, één benchmark-spike (zoekarchitectuur) staat
-nog open als expliciet eerste werkpakket. Daarna implementatieklaar.
+**Status:** Concept — kernkeuzes gemaakt. **Twee spikes** staan open als eerste
+werkpakketten en moeten af zijn vóór de overige plannen implementatieklaar zijn:
+(1) zoekarchitectuur (§9), (2) tegel-/filter-/cluster-/detail-model (§9b). Beide
+draaien op representatieve data met **vooraf vastgelegde acceptatiegrenzen**.
 **Reviews verwerkt:** codex-review (`2026-06-19-kinderkaart-design-feedback.md`) +
-onafhankelijke Opus-review.
+onafhankelijke Opus-review + derde review (clustering/identity/publicatie).
 
 ## 1. Doel
 
@@ -24,10 +26,12 @@ kindvriendelijke restaurants), met uitgebreide zoek- en filtermogelijkheden.
 | Laag | Keuze | Status |
 |---|---|---|
 | Front-end / kaart | MapLibre GL + Vite + TypeScript | beslist |
-| Browse-data | **PMTiles** (vector tiles, build-time clusters) + apart POI-detailrecord | beslist |
+| Browse-data | **PMTiles met *ongeclusterde* punten** (facetten als attributen) + **client-side clustering over gefilterde features** (§9b) | beslist (perf te valideren in spike 2) |
+| POI-detail | **gesharde statische JSON**, lazy per klik, immutable + cache (§9b) | beslist (shard-schema in spike 2) |
 | Scrapers / pipeline | Python (uv, py3.13): osmium, pyproj, pydantic, httpx | beslist |
-| Basemap | PDOK BRT (NL) — endpoint/format gepind in §10; landspecifiek | beslist |
-| Zoeken | **Open: benchmark client-side static index vs Vercel-API** (§9) | **spike** |
+| Basemap | PDOK BRT-A — endpoint/style/fallback te verifiëren + pinnen in front-end-plan (§10); landspecifiek | te pinnen |
+| Zoeken | **Open: benchmark client-side static index vs Vercel-API** (§9) | **spike 1** |
+| Tegel/cluster/detail | **Validatie ongeclusterde PMTiles + client-cluster + lazy detail** (§9b) | **spike 2** |
 | Restaurant-bron | Agent-gedreven, codespace-only, gecureerd met provenance (§8) | beslist |
 
 ## 3. Architectuur
@@ -38,20 +42,25 @@ sources/<bron>/  (manifest.yaml + adapter CLI)
         ▼
 GitHub Actions (één build-coördinator, concurrency-locked):
   merge/dedup (sterke sleutels + verklaarbare score) → canonieke POI-database
+  → identity registry (§6) bewaart stabiele poi_id's + aliases over builds
   → publicatie-artefacten met één gedeelde data_version:
-      • PMTiles (browse: clusters per zoom + detailrecords)
-      • zoekindex (vorm volgt uit §9-benchmark)
+      • PMTiles: ongeclusterde punten + filter-attributen (geen build-time clusters)
+      • gesharde POI-detail-JSON (lazy lookup)
+      • zoekindex (vorm volgt uit §9-spike)
       • licentierapport (machineleesbaar + UI-weergave)
+      • versie-manifest.json (country → data_version + artefact-URL's)
   → publish-gate (schema, aantallen, coördinaten, bron-aanwezigheid)
-        │  alleen bij groen: atomair publiceren; anders last-known-good behouden
+        │  alleen bij groen: atomair publiceren (manifest-switch als laatste stap);
+        │  anders last-known-good behouden
         ▼
-GitHub Pages: web-app + PMTiles + (evt.) statische zoekindex  ── atomair, versiegebonden
-(optioneel) Vercel: /api/search  ── alleen als de benchmark daarvoor kiest
+GitHub Pages: web-app + PMTiles + detail-shards + (evt.) zoekindex  ── immutable, versiegebonden
+(optioneel) Vercel: /api/search  ── alleen als spike 1 daarvoor kiest
 ```
 
-Browse/filter draait op de statische PMTiles (CDN, gratis). Vrije-tekstzoeken via de
-in §9 gekozen route. Web-app, browse-data en zoekindex komen uit **dezelfde build** en
-delen één `data_version`.
+Browse draait op statische PMTiles (CDN, gratis); **filteren + clustering gebeurt
+client-side over de gefilterde features** (§9b). Vrije-tekstzoeken via de in §9 gekozen
+route. Web-app, browse-data, detail-shards en zoekindex komen uit **dezelfde build** en
+delen één `data_version`, geactiveerd via één manifest-switch (§7).
 
 ## 4. Gedeeld POI-schema
 
@@ -145,19 +154,36 @@ User-Agent staan centraal vastgelegd (gedeelde helper), niet per adapter herhaal
 5. **Meerdere categorieën** waar inhoudelijk nodig (museum dat ook kinderboerderij is).
 6. **Representatief punt:** voorkeur voor entree-node; anders centroid van geometrie.
 7. **Deterministisch & idempotent:** zelfde input → zelfde output.
-8. **`poi_id`-stabiliteit:** afgeleid van de hoogst-geprioriteerde bron-id; bij wisselende
-   clustermembership behoudt het object zijn `poi_id` en schrijft de oude id naar `aliases`.
+8. **`poi_id`-stabiliteit via een persistente identity registry.** Determinisme alleen is
+   niet genoeg: een stabiele publieke `poi_id` vereist **historische state**. We houden een
+   **versiebeheerde identity registry** bij (bv. `data/<land>/identity.json` of een kleine
+   SQLite, gecommit/als release-asset per build). De merge:
+   - leest de vorige registry,
+   - matcht een nieuw cluster op een bestaand `poi_id` via overlappende `external_ids`,
+   - **hergebruikt** dat `poi_id` (ook als de samenstelling licht wijzigt),
+   - **mint** een nieuw id alleen voor echt nieuwe objecten,
+   - bij split/merge: nieuwe id(s) + oude id(s) als `aliases` (deep-link-redirects),
+   - registry is append-only voor aliases; ids worden nooit hergebruikt voor een ander object.
 9. **Handmatige overrides:** versiebeheerd `overrides.yaml` voor geforceerde merges,
    geforceerde splits en veldcorrecties.
 10. **Regressieset:** gelabelde echte merges én non-merges; golden tests in CI (§14).
 
 ## 7. Datapijplijn & publicatie
 
-- **Opslagmodel:** ruwe snapshots als **workflow-cache/release-asset** (niet in Git →
-  geen repogroei); genormaliseerde NDJSON + canonieke build-output als **release-asset**
-  per `data_version`. De repo blijft klein; elke build is reproduceerbaar uit snapshot+checksum+adapterversie.
-- **Atomische publicatie:** web-app + PMTiles als één versiegebonden Pages-artefact;
-  zoekindex uit exact dezelfde build; alle responses/artefacten dragen `data_version`.
+- **Opslagmodel + retentie:** ruwe snapshots als **immutable, gedateerde release-assets**
+  (tag `snapshot-<bron>-<datum>`, niet in Git → geen repogroei). Retentiebeleid: bewaar de
+  laatste *K* snapshots per bron + maandelijkse archieven; een **scheduled GC-workflow**
+  ruimt oudere op. Builds refereren aan een snapshot via release-tag + checksum, zodat elke
+  build reproduceerbaar/auditbaar is uit snapshot + checksum + adapterversie.
+- **Atomische publicatie (concreet):**
+  - Artefacten staan onder een **per-versie pad**: `data/<land>/<data_version>/…`
+    (`tiles.pmtiles`, `detail/<shard>.json`, `search-index.*`). Deze zijn **immutable** en
+    content-gehasht → `Cache-Control: public, max-age=31536000, immutable`.
+  - Eén klein **`manifest.json`** (top-level) mapt `land → huidige data_version + artefact-URL's`,
+    geserveerd met `Cache-Control: no-cache` (of `max-age=60, stale-while-revalidate`).
+  - **Switch = manifest.json als láátste stap updaten.** Een client met een oud manifest
+    blijft geldige oude (nog aanwezige) artefacten gebruiken; na refetch van het manifest
+    krijgt hij de nieuwe versie. Geen half-verouderde mix omdat versies nooit in-place wijzigen.
 - **Publish-gate** (anders: behoud last-known-good): schemafouten, aantallen buiten
   `expected_count`, ongeldige coördinaten, of een ontbrekende verplichte bron blokkeren publicatie.
 - **Verwijdering/veroudering:** een record dat uit de bron verdwijnt wordt na N builds
@@ -204,10 +230,12 @@ datapartnerschap; bronvermelding beperkt risico maar heft het niet op.
 - Mission-aligned alternatief: **Jantje Beton Buitenspeelkaart / Bureau Speelplan**,
   **Natuurmonumenten OERRR**, **Springzaad** (toestemming vragen i.p.v. scrapen).
 
-## 9. Zoeken — benchmark-spike (eerste werkpakket)
+## 9. Spike 1 — Zoekarchitectuur (eerste werkpakket)
 
-Voor ~40k punten is een serverless API niet bewezen nodig. **Eerste werkpakket = spike**
-die twee routes meet en vastlegt:
+**Verplicht: representatieve data + vooraf vastgelegde acceptatiegrenzen.** Een spike
+zonder beslisregel levert alleen meetwaarden. De spike draait op een **representatieve
+merged dataset** (de echte NL-POI's uit Plannen 1–3), en we leggen de pass/fail-drempels
+*vóór* het meten vast. Pas dan vergelijken we twee routes:
 
 - **A) Statische client-side index** (FlexSearch/MiniSearch, evt. gesharded per regio,
   op GitHub Pages): gratis, privacyvriendelijk (geen zoektekst naar derden), geen extra stack.
@@ -215,8 +243,11 @@ die twee routes meet en vastlegt:
   Node-bundle inclusief runtime** — geen doelgrootte; echte risico = cold-start
   rehydratie/geheugen binnen de timeout.
 
-**Meetcriteria:** indexgrootte, initiële/cold laadtijd, query-latency (p50/p95),
-geheugen op een beoogde mobiel, privacy, kosten. Keuze valt na meting.
+**Vooraf vastgelegde acceptatiegrenzen (concrete startwaarden, te bevestigen):**
+query-latency p95 < 150 ms; eerste-load extra transfer voor zoeken < 1,5 MB gz; piek­geheugen
+toename op een mid-range mobiel < 80 MB; (route B) p95 inclusief cold start < 800 ms; kosten
+binnen free tier. **Beslisregel:** voldoet A aan alle grenzen → kies A (simpeler, gratis,
+privacyvriendelijk). Anders → B, mits B alle grenzen haalt. Spike-output = pass/fail + keuze.
 
 **Als A wint:** vorm + sharding-strategie + `data_version`-koppeling vastleggen.
 **Als B wint, specificeer:** request/response-schema, normalisatie, ranking,
@@ -228,13 +259,44 @@ web/browse/index, en het concrete deploymentmechanisme (geen vaag "push naar Ver
 (alleen huidige kaartomgeving). We leveren ofwel een statische client-index als echte
 fallback, ofwel benoemen dit expliciet in de UI als beperkte offline-modus.
 
+## 9b. Spike 2 — Tegel-, filter-, cluster- en detailmodel (eerste werkpakket)
+
+**Het probleem (terecht door de review aangewezen):** build-time clusters kunnen niet
+correct worden herberekend voor willekeurige combinaties van categorie, leeftijd, gratis,
+indoor en afstand. Punten verbergen laat clusteraantallen/-geometrie op ongefilterde data
+staan. Daarom: **geen build-time clusters.**
+
+**Voorgesteld model (te valideren in deze spike):**
+- **PMTiles bevat ongeclusterde punten**, elk met de filterbare facetten als tile-attributen
+  (`categories`, `indoor`, `free`, `age_min`, `age_max`) + `poi_id` + minimale labelvelden.
+- De client laadt **in-viewport** features uit PMTiles, **filtert client-side**, en draait
+  **client-side clustering (supercluster)** over de *gefilterde* set. Clusteraantallen en
+  -geometrie kloppen dus altijd met de actieve filters. Afstandsfilter relatief aan het
+  referentiepunt (§10), client-side.
+- **POI-detail** (beschrijving, openingstijden, adres, images, provenance) zit **niet** in de
+  tiles maar in **gesharde statische JSON**: `detail/<shard>.json`, waarbij `shard` =
+  deterministische bucket (bv. geohash-prefix of hash-modulo van `poi_id`). Lazy ophalen bij
+  marker-klik, immutable + HTTP-gecachet. Shard-doel: ≤ ~300 POI's / ≤ ~50 KB gz per shard.
+
+**Vooraf vastgelegde acceptatiegrenzen (startwaarden, te bevestigen) op NL-schaal (~40–60k punten):**
+time-to-first-points < 2 s (mid-range mobiel, "fast 3G"); pan/zoom-respons < 100 ms;
+initiële browse-transfer < 2 MB gz; piekgeheugen < 250 MB; detail-fetch < 150 ms p95.
+**Beslisregel:** haalt het model alle grenzen → vastleggen als definitief tegelcontract
+(zoomniveaus, attribuutset, shard-schema, lookup + cache). Zo niet → het model bijstellen
+(bv. server-side viewport-aggregatie of zoom-afhankelijke vereenvoudiging) en opnieuw meten;
+dit blokkeert het front-end-plan tot er een passend, gemeten contract ligt.
+
 ## 10. Front-end (MapLibre GL + Vite + TS)
 
-- Vector-kaart met clusters uit PMTiles; categorie-iconen; PDOK BRT basemap
-  (endpoint/format gepind; custom MapLibre-style indien nodig).
+- Ongeclusterde PMTiles-punten + **client-side clustering over gefilterde features** (§9b);
+  categorie-iconen.
+- **Basemap = PDOK BRT-A** (Achtergrondkaart). Exacte service (vector-tiles + style-JSON,
+  met WMTS-raster als fallback) en style-versie worden **geverifieerd en gepind in het
+  front-end-plan** (niet aannemen dat een endpoint stabiel is); attributie verplicht.
 - **Filterpaneel** op de getypeerde facetten (categorie, indoor/outdoor, gratis,
   leeftijd, afstand). **Onbekend toont niet als negatief** (geen `null`→`false`).
-- **Browse = statische PMTiles** (CDN, gratis). **Zoeken** via §9-route.
+- **Browse = statische PMTiles** (CDN, gratis); **detail lazy uit gesharde JSON** (§9b).
+  **Zoeken** via §9-route.
 - **Afstand** wordt gemeten vanaf een expliciete referentie: (1) apparaatlocatie na
   toestemming, anders (2) kaartmiddelpunt, of (3) gezochte plaats. Toestemmingsstatus en
   een alternatief zonder geolocatie zijn onderdeel van de UI.
@@ -261,6 +323,11 @@ fallback, ofwel benoemen dit expliciet in de UI als beperkte offline-modus.
   **MVP publiceert geen afbeeldingen** (`images: []`); we activeren ze pas met correcte
   per-bestand-attributie.
 - Eindcombinatie ODbL + concrete CC-BY-bronnen juridisch laten toetsen.
+- **Open projectrisico's (expliciet, nog niet opgelost):** (1) de juridische houdbaarheid
+  van de gecombineerde ODbL-database mét CC-BY-bronnen vraagt een externe toets vóór brede
+  publicatie; (2) museum.nl blijft zonder expliciete toestemming/licentie een risico — daarom
+  geïsoleerd als `codespace-only` bron en **verwijderbaar** gehouden (de build moet zonder
+  museum.nl een geldige publicatie opleveren). Beide staan als actie-items, niet als opgelost.
 
 ## 12. Multi-country (voorbereid, niet "gratis")
 
@@ -276,10 +343,12 @@ zoekpartitie. `country` = ISO 3166-1 alpha-2. **Taal is geen eigenschap van het 
 - **Land:** `nl`.
 - **Bronnen:** OSM, Wikidata, RCE, Den Haag + Eindhoven, museum.nl (codespace-only),
   agent-restaurantbron (codespace-only), PDOK basemap.
-- **Eerste werkpakket:** de zoek-benchmark-spike (§9).
-- **Eindresultaat:** statische kaart op GitHub Pages, browse/filter op PMTiles + zoeken
-  via de gekozen route, gevoed door een reproduceerbare GitHub-Actions-pijplijn met
-  publish-gate en last-known-good.
+- **Eerste werkpakketten:** spike 1 (zoekarchitectuur, §9) + spike 2 (tegel-/cluster-/
+  detailmodel, §9b), beide op representatieve data met vooraf vastgelegde acceptatiegrenzen.
+  Pas na beide spikes zijn front-end en build-plan implementatieklaar.
+- **Eindresultaat:** statische kaart op GitHub Pages, browse + client-side gefilterde
+  clustering op PMTiles + lazy detail-shards + zoeken via de gekozen route, gevoed door een
+  reproduceerbare GitHub-Actions-pijplijn met identity registry, publish-gate en last-known-good.
 
 ## 14. Kwaliteit, tests & beheer
 
