@@ -1550,7 +1550,8 @@ merged data (Plans 2–3) and pre-registered acceptance thresholds before they c
 6. **Plan 5 — Front-end (spec §10):** MapLibre + unclustered-PMTiles browse with client-side
    filtered clustering, lazy detail-shard fetch, typed facet filters, distance reference,
    browser geolocation with auto-center + fallback NL view, mobile-first responsive layout
-   (desktop side-panel overview), deep-links (view + `poi_id` + query/filters),
+   (desktop side-panel overview), favorites via localStorage (keyed on `poi_id`, alias-safe),
+   deep-links (view + `poi_id` + query/filters),
    verified/pinned PDOK BRT-A basemap + raster fallback, attribution UI, a11y.
 7. **Plan 6 — CI orchestration (spec §7):** dispatcher workflow (matrix over manifests),
    `workflow_dispatch` for codespace-only sources, concurrency locking, freshness monitoring,

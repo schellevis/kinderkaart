@@ -390,6 +390,10 @@ shard-/lookupcontract, hosting).
   filters/resultaten in een bottom-sheet of overlay, touch-vriendelijke targets). Op
   **desktop extra overzicht**: kaart naast een persistent zijpaneel met de resultatenlijst
   + filters tegelijk zichtbaar. Eén codebase, breakpoint-gestuurd; geen aparte build.
+- **Favorieten (localStorage):** gebruiker kan POI's als favoriet markeren; opgeslagen in
+  `localStorage` op stabiele `poi_id` (geen account, blijft client-side — privacy, §14).
+  Favorieten blijven over sessies bewaard, zijn als filter/laag te tonen en overleven een
+  `data_version`-wissel via de `aliases`-redirects (§6). Geen serverstate; export/import als JSON optioneel.
 - **Deep-links:** view (`lat/lon/z`) **én** geselecteerde `poi_id` (via `aliases`
   redirect-bestendig) **én** actieve query + filters — volledig deelbaar.
 - **Attributie:** zichtbaar op de kaart ("© OpenStreetMap contributors" + CC-BY-bronnen),
