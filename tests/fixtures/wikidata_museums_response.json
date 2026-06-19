@@ -1,0 +1,23 @@
+{
+  "results": {
+    "bindings": [
+      {
+        "item": {"type": "uri", "value": "http://www.wikidata.org/entity/Q190804"},
+        "itemLabel": {"type": "literal", "value": "Rijksmuseum"},
+        "coord": {"type": "literal", "value": "Point(4.885278 52.36)"},
+        "website": {"type": "uri", "value": "https://www.rijksmuseum.nl/"}
+      },
+      {
+        "item": {"type": "uri", "value": "http://www.wikidata.org/entity/Q190804"},
+        "itemLabel": {"type": "literal", "value": "Rijksmuseum"},
+        "coord": {"type": "literal", "value": "Point(4.885278 52.36)"},
+        "website": {"type": "uri", "value": "https://rijksmuseum.example/en"}
+      },
+      {
+        "item": {"type": "uri", "value": "http://www.wikidata.org/entity/Q1129456"},
+        "itemLabel": {"type": "literal", "value": "Spoorwegmuseum"},
+        "coord": {"type": "literal", "value": "Point(5.13 52.0907)"}
+      }
+    ]
+  }
+}
