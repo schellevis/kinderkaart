@@ -1,0 +1,5 @@
+# Versioned manual corrections applied during merge.
+force_merge:
+  - ["osm/node/123", "wikidata-museums/Q456"]   # these are the same place
+force_split:
+  - ["osm/node/1", "osm/node/2"]                # never merge these two
