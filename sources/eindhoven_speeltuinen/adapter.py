@@ -34,13 +34,10 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
     for i, feat in enumerate(data["features"]):
         lat, lon = representative_point(feat["geometry"])
         props = feat.get("properties", {})
-        name = props.get("straatnaam") or props.get("naam") or f"Speeltuin {props.get('buurt', i)}"
+        name = props.get("naam") or props.get("straatnaam") or f"Speelplek {i}"
         yield SourcePOI(
-            source_id=MANIFEST.id,
-            source_record_id=f"{MANIFEST.id}:{i}",
-            name=name,
-            categories=list(CATEGORIES),
-            lat=lat, lon=lon, country=MANIFEST.country,
+            source_id=MANIFEST.id, source_record_id=f"{MANIFEST.id}:{i}", name=name,
+            categories=list(CATEGORIES), lat=lat, lon=lon, country=MANIFEST.country,
             fetched_at=fetched_at,
             field_provenance={"name": MANIFEST.id, "lat": MANIFEST.id, "lon": MANIFEST.id},
         )

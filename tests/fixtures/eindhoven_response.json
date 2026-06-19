@@ -1,0 +1,8 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type": "Feature",
+     "geometry": {"type": "Point", "coordinates": [5.478, 51.441]},
+     "properties": {"straatnaam": "Stratumsedijk", "naam": "Speeltuin Stratum"}}
+  ]
+}
