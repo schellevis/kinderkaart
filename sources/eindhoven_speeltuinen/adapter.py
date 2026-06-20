@@ -28,11 +28,28 @@ def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
     )
 
 
+def _coords(feat: dict) -> tuple[float, float] | None:
+    geometry = feat.get("geometry")
+    if geometry is not None:
+        return representative_point(geometry)
+
+    point = feat.get("geo_point_2d")
+    if isinstance(point, dict):
+        lat = point.get("lat")
+        lon = point.get("lon")
+        if isinstance(lat, (int, float)) and isinstance(lon, (int, float)):
+            return float(lat), float(lon)
+    return None
+
+
 def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
     with path.open("rb") as fh:
         data = json.load(fh)
     for i, feat in enumerate(data["features"]):
-        lat, lon = representative_point(feat["geometry"])
+        coords = _coords(feat)
+        if coords is None:
+            continue
+        lat, lon = coords
         props = feat.get("properties", {})
         name = props.get("naam") or props.get("straatnaam") or f"Speelplek {i}"
         # Use coordinate-based id for stability across re-fetches; Opendatasoft has no

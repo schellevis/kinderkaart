@@ -18,6 +18,7 @@ import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse
 
 from data_pipeline.build import build_site
 from data_pipeline.manifest import load_manifest, package_dir
@@ -31,6 +32,13 @@ _SMOKE_FIXTURES: dict[str, str] = {
     "eindhoven-speeltuinen": "eindhoven_response.json",
     "osm": "osm_sample.osm",
 }
+
+
+def _raw_snapshot_path(work_dir: Path, source_id: str, endpoint: str | None) -> Path:
+    suffix = ""
+    if endpoint:
+        suffix = "".join(Path(urlparse(endpoint).path).suffixes)
+    return work_dir / f"{source_id}.raw{suffix}"
 
 
 def run(
@@ -103,7 +111,9 @@ def run(
             # Live mode: snapshot to temp file, then normalize.
             import httpx
 
-            raw_path = work_dir / f"{manifest.id}.raw"
+            raw_path = _raw_snapshot_path(
+                work_dir, manifest.id, manifest.endpoint
+            )
             with raw_path.open("wb") as fh:
                 client = httpx.Client(
                     headers={"User-Agent": "kinderkaart/0.1 contact@nos.nl"},
