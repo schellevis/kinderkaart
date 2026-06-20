@@ -11,11 +11,11 @@ on:
 permissions:
   pages: write
   id-token: write
-  contents: read
+  contents: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: identity-registry
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -68,6 +68,12 @@ jobs:
         with:
           path: public_site
 
+      - name: Preserve identity registry for post-deploy commit
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-identity
+          path: site/data/nl/identity.json
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -75,6 +81,23 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Download deployed identity registry
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-identity
+          path: site/data/nl
+
+      - name: Commit deployed identity registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/data/nl/identity.json
+          git diff --quiet --cached || git commit -m "chore: persist deployed identity registry [skip ci]"
+          git push

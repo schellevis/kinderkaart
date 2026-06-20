@@ -53,7 +53,10 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
         props = feat.get("properties", {})
         addr = {k: v for k, v in (("city", props.get("plaats")),
                                   ("postcode", props.get("postcode"))) if v}
-        prov = {"name": MANIFEST.id, "lat": MANIFEST.id, "lon": MANIFEST.id}
+        prov = {
+            "name": MANIFEST.id, "categories": MANIFEST.id,
+            "lat": MANIFEST.id, "lon": MANIFEST.id, "country": MANIFEST.id,
+        }
         if addr:
             prov["address"] = MANIFEST.id
         yield SourcePOI(

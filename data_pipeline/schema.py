@@ -172,6 +172,11 @@ class SourceRef(_Strict):
             raise ValueError("fetched_at must be timezone-aware")
         return v.astimezone(timezone.utc)
 
+    @field_validator("source_url")
+    @classmethod
+    def _source_url(cls, v: str | None) -> str | None:
+        return _check_url(v)
+
 
 class CanonicalPOI(FacetFields):
     poi_id: str

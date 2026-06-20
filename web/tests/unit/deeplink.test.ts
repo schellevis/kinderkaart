@@ -11,6 +11,11 @@ describe("encode + decode round-trip", () => {
       poi: "nl:osm:node:123",
       q: "museum",
       cats: ["museum", "zoo"],
+      indoor: true,
+      free: true,
+      age: 7,
+      distance: 10000,
+      favorites: true,
     };
     const qs = encode(state);
     const decoded = decode(qs);
@@ -20,6 +25,11 @@ describe("encode + decode round-trip", () => {
     expect(decoded.poi).toBe("nl:osm:node:123");
     expect(decoded.q).toBe("museum");
     expect(decoded.cats).toEqual(["museum", "zoo"]);
+    expect(decoded.indoor).toBe(true);
+    expect(decoded.free).toBe(true);
+    expect(decoded.age).toBe(7);
+    expect(decoded.distance).toBe(10000);
+    expect(decoded.favorites).toBe(true);
   });
 
   it("round-trips partial state (cats only)", () => {

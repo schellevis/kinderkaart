@@ -42,7 +42,19 @@ class Registry:
                     out[m] = pid
         return out
 
-    def assign(self, clusters: list[list[str]]) -> dict[int, str]:
+    def assign(
+        self,
+        clusters: list[list[str]],
+        *,
+        authoritative_source_ids: set[str] | None = None,
+        deletion_grace_builds: int = 2,
+        observation_id: str | None = None,
+    ) -> dict[int, str]:
+        if deletion_grace_builds < 1:
+            raise ValueError("deletion_grace_builds must be >= 1")
+        if observation_id is None:
+            canonical = json.dumps(sorted(sorted(c) for c in clusters), separators=(",", ":"))
+            observation_id = hashlib.sha1(canonical.encode()).hexdigest()
         # Step 1: active member-key -> poi_id, and prior members per active id.
         m2id: dict[str, str] = {}
         prior_members: dict[str, set[str]] = {}
@@ -105,7 +117,20 @@ class Registry:
 
         # Step 6: tombstone set computed BEFORE minting.
         ambiguous = {pid for pid, ci in claimable.items() if ci is None}
-        deletions = {pid for pid in prior_members if pid not in referenced}
+        missing = {pid for pid in prior_members if pid not in referenced}
+        deletion_candidates: set[str] = set()
+        for pid in missing:
+            member_sources = {m.split("/", 1)[0] for m in prior_members[pid]}
+            if authoritative_source_ids is None or member_sources <= authoritative_source_ids:
+                deletion_candidates.add(pid)
+        deletions: set[str] = set()
+        for pid in deletion_candidates:
+            entry = self.entries[pid]
+            if entry.get("last_missing_observation") != observation_id:
+                entry["missing_builds"] = int(entry.get("missing_builds", 0)) + 1
+                entry["last_missing_observation"] = observation_id
+            if entry["missing_builds"] >= deletion_grace_builds:
+                deletions.add(pid)
         tombstoned: set[str] = ambiguous | merge_losers | deletions
 
         # Step 7: mint ids for clusters with no kept id.
@@ -134,6 +159,8 @@ class Registry:
             )
             self.entries[pid]["status"] = "active"
             self.entries[pid]["members"] = sorted(set(members))
+            self.entries[pid]["missing_builds"] = 0
+            self.entries[pid].pop("last_missing_observation", None)
             # I2 fix: an active id must not remain an alias of any other entry.
             for other, e in self.entries.items():
                 if other == pid:

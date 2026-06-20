@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from data_pipeline.merge_config import source_rank
-from data_pipeline.schema import CanonicalPOI, SourcePOI, SourceRef
+from data_pipeline.schema import CanonicalPOI, Image, SourcePOI, SourceRef
 
 # Scalar fields resolved by source priority (highest-priority non-null wins).
 _SCALAR_FIELDS = (
@@ -30,12 +30,31 @@ def merge_cluster(pois: list[SourcePOI], poi_id: str) -> CanonicalPOI:
     for p in ordered:
         for c in p.categories:
             if c not in categories:
+                provenance[f"/categories/{len(categories)}"] = (
+                    f"{p.source_id}/{p.source_record_id}"
+                )
                 categories.append(c)
 
     external_ids: dict[str, str] = {}
     for p in ordered:
         for k, v in p.external_ids.items():
-            external_ids.setdefault(k, v)
+            if k not in external_ids:
+                external_ids[k] = v
+                provenance[f"/external_ids/{k}"] = f"{p.source_id}/{p.source_record_id}"
+
+    tags: dict = {}
+    for p in ordered:
+        for key, value in p.tags.items():
+            if key not in tags:
+                tags[key] = value
+                provenance[f"/tags/{key}"] = f"{p.source_id}/{p.source_record_id}"
+
+    images: list[Image] = []
+    for p in ordered:
+        for image in p.images:
+            if image not in images:
+                provenance[f"/images/{len(images)}"] = f"{p.source_id}/{p.source_record_id}"
+                images.append(image)
 
     contributing = [
         SourceRef(source_id=p.source_id, source_record_id=p.source_record_id,
@@ -47,6 +66,8 @@ def merge_cluster(pois: list[SourcePOI], poi_id: str) -> CanonicalPOI:
     return CanonicalPOI(
         poi_id=poi_id,
         external_ids=external_ids,
+        tags=tags,
+        images=images,
         categories=categories,
         country=ordered[0].country,
         contributing=contributing,

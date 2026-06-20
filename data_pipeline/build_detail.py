@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import math
+import gzip
+import json
 
 from data_pipeline.hashing import fnv1a
 from data_pipeline.schema import CanonicalPOI
@@ -35,9 +37,43 @@ def _detail(poi: CanonicalPOI) -> dict:
     }
 
 
+def _encoded_size(payload: dict) -> int:
+    raw = json.dumps(
+        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode() + b"\n"
+    return len(gzip.compress(raw, compresslevel=9, mtime=0))
+
+
 def build_detail(canon: list[CanonicalPOI], shard_count: int) -> dict[int, dict[str, dict]]:
     shards: dict[int, dict[str, dict]] = {}
     for poi in sorted(canon, key=lambda p: p.poi_id):
         sh = shard_of(poi.poi_id, shard_count)
         shards.setdefault(sh, {})[poi.poi_id] = _detail(poi)
+        for alias in sorted(poi.aliases):
+            alias_shard = shard_of(alias, shard_count)
+            shards.setdefault(alias_shard, {})[alias] = {"redirect_to": poi.poi_id}
     return shards
+
+
+def choose_shard_count(
+    canon: list[CanonicalPOI],
+    *,
+    max_records: int = 300,
+    max_gzip_bytes: int = 50 * 1024,
+) -> tuple[int, dict[int, dict[str, dict]]]:
+    """Choose the smallest deterministic shard count satisfying both hard limits."""
+    entries = len(canon) + sum(len(p.aliases) for p in canon)
+    for poi in canon:
+        if _encoded_size({poi.poi_id: _detail(poi)}) > max_gzip_bytes:
+            raise ValueError(f"detail record exceeds gzip limit: {poi.poi_id}")
+    count = shard_count_for(entries, max_records)
+    max_count = max(count, entries * 10, 1)
+    while count <= max_count:
+        shards = build_detail(canon, count)
+        if all(
+            len(payload) <= max_records and _encoded_size(payload) <= max_gzip_bytes
+            for payload in shards.values()
+        ):
+            return count, shards
+        count += 1
+    raise ValueError("could not satisfy detail shard limits")

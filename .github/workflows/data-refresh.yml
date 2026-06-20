@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 concurrency:
-  group: data-refresh
+  group: identity-registry
   cancel-in-progress: false
 
 permissions:
@@ -38,6 +38,12 @@ jobs:
             --data-version "$DATA_VERSION" \
             --exclude ""
 
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-data
+          path: site/
+
       - name: Commit updated identity registry
         run: |
           git config user.name "github-actions[bot]"
@@ -45,9 +51,3 @@ jobs:
           git add site/data/nl/identity.json
           git diff --quiet --cached || git commit -m "chore: refresh identity registry [skip ci]"
           git push
-
-      - name: Upload site artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-data
-          path: site/

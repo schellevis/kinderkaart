@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
+import random
 
-from data_pipeline.build_detail import build_detail, shard_count_for, shard_of
+import pytest
+
+from data_pipeline.build_detail import build_detail, choose_shard_count, shard_count_for, shard_of
 from data_pipeline.schema import CanonicalPOI, SourceRef
 
 T = datetime(2026, 6, 19, tzinfo=timezone.utc)
@@ -54,3 +57,26 @@ def test_tags_evidence_round_trips_into_detail():
     record = sh["restaurants-agent/1"]
     assert "tags" in record
     assert record["tags"]["evidence"] == evidence
+
+
+def test_alias_is_resolvable_from_its_own_hash_shard():
+    poi = _canon("rce-musea/current")
+    poi.aliases = ["wikidata-museums/old"]
+    count, detail = choose_shard_count([poi])
+    alias_shard = shard_of("wikidata-museums/old", count)
+    assert detail[alias_shard]["wikidata-museums/old"] == {
+        "redirect_to": "rce-musea/current"
+    }
+
+
+def test_chosen_shards_enforce_record_limit():
+    canon = [_canon(f"osm/node/{i}") for i in range(1000)]
+    _, detail = choose_shard_count(canon, max_records=25)
+    assert max(map(len, detail.values())) <= 25
+
+
+def test_single_oversized_detail_fails_instead_of_looping_forever():
+    poi = _canon("osm/node/large")
+    poi.tags = {"blob": random.Random(42).randbytes(100_000).hex()}
+    with pytest.raises(ValueError, match="exceeds gzip limit"):
+        choose_shard_count([poi])

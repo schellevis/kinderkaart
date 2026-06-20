@@ -59,6 +59,15 @@ export interface DetailRecord {
     source_url: string | null;
   }>;
   last_updated: string | null;
+  tags?: {
+    evidence?: Array<{
+      signal: string;
+      direct: boolean;
+      source_record_id: string;
+      source_url: string;
+      evidence_date: string;
+    }>;
+  };
 }
 
 export interface DetailOptions {
@@ -184,6 +193,36 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
 
   // Website
   content.appendChild(field("Website", opts.record.website, true));
+
+  const evidence = opts.record.tags?.evidence ?? [];
+  if (evidence.length > 0) {
+    const evidenceRow = document.createElement("div");
+    evidenceRow.className = "detail-field";
+    const label = document.createElement("span");
+    label.className = "detail-field-label";
+    label.textContent = "Waarom kindvriendelijk?";
+    const values = document.createElement("span");
+    values.className = "detail-field-value";
+    for (const item of evidence) {
+      const line = document.createElement("div");
+      const safe = safeHttpUrl(item.source_url);
+      const text = `${item.signal}${item.direct ? " (direct bewijs)" : ""}`;
+      if (safe) {
+        const link = document.createElement("a");
+        link.href = safe;
+        link.textContent = text;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        line.appendChild(link);
+      } else {
+        line.textContent = text;
+      }
+      values.appendChild(line);
+    }
+    evidenceRow.appendChild(label);
+    evidenceRow.appendChild(values);
+    content.appendChild(evidenceRow);
+  }
 
   // Last updated
   const lastUpdated = opts.record.last_updated

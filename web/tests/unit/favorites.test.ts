@@ -42,6 +42,13 @@ describe("Favorites", () => {
     expect(favs.has("nl:osm:2")).toBe(true);
   });
 
+  it("migrates an aliased id without duplicates", () => {
+    favs.add("old-id");
+    favs.add("new-id");
+    favs.replace("old-id", "new-id");
+    expect(favs.list()).toEqual(["new-id"]);
+  });
+
   it("toggle adds then removes", () => {
     const result1 = favs.toggle("nl:osm:3");
     expect(result1).toBe(true);

@@ -41,6 +41,12 @@ export class Favorites {
     save(load().filter((i) => i !== id));
   }
 
+  replace(oldId: string, newId: string): void {
+    const current = load();
+    if (!current.includes(oldId)) return;
+    save(Array.from(new Set(current.map((id) => (id === oldId ? newId : id)))));
+  }
+
   toggle(id: string): boolean {
     if (this.has(id)) {
       this.remove(id);

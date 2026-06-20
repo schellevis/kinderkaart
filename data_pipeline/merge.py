@@ -67,7 +67,8 @@ def _apply_overrides(clusters: list[list[int]], pois: list[SourcePOI],
 
 
 def run_merge(source_ndjson_paths: list[Path], identity_path: Path, out_path: Path,
-              build_version: str, overrides_path: Path | None = None) -> int:
+              build_version: str, overrides_path: Path | None = None,
+              authoritative_source_ids: set[str] | None = None) -> int:
     pois = _load_sources(source_ndjson_paths)
     overrides: dict = {}
     if overrides_path and overrides_path.exists():
@@ -81,7 +82,11 @@ def run_merge(source_ndjson_paths: list[Path], identity_path: Path, out_path: Pa
         for members in clusters
     ]
     reg = Registry.load(identity_path)
-    idx_to_id = reg.assign(member_clusters)
+    idx_to_id = reg.assign(
+        member_clusters,
+        authoritative_source_ids=authoritative_source_ids,
+        observation_id=build_version,
+    )
     reg.save(identity_path)
 
     canon: list[CanonicalPOI] = []

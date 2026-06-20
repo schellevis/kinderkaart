@@ -13,6 +13,8 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import os
+import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -40,6 +42,7 @@ def run(
     only_runtime: str = "github-action",
     include_ids: set[str] | None = None,
     exclude_ids: set[str] | None = None,
+    prebuilt_sources: dict[str, Path] | None = None,
     smoke: bool = False,
 ) -> dict:
     """Run the full pipeline and return the site manifest dict."""
@@ -58,8 +61,10 @@ def run(
     for manifest_path in manifest_paths:
         manifest = load_manifest(manifest_path)
 
-        # Filter by runtime.
-        if manifest.runtime != only_runtime:
+        prebuilt = (prebuilt_sources or {}).get(manifest.id)
+
+        # Filter by runtime unless an explicitly supplied normalized stream is used.
+        if manifest.runtime != only_runtime and prebuilt is None:
             continue
 
         # Apply include/exclude filters.
@@ -68,10 +73,16 @@ def run(
         if exclude_ids is not None and manifest.id in exclude_ids:
             continue
 
+        ndjson_path = work_dir / f"{manifest.id}.ndjson"
+
+        if prebuilt is not None:
+            shutil.copyfile(prebuilt, ndjson_path)
+            ndjson_paths.append(ndjson_path)
+            included_source_ids.append(manifest.id)
+            continue
+
         pkg = package_dir(manifest.id)
         adapter = importlib.import_module(f"sources.{pkg}.adapter")
-
-        ndjson_path = work_dir / f"{manifest.id}.ndjson"
 
         if smoke:
             fixture_name = _SMOKE_FIXTURES.get(manifest.id)
@@ -117,12 +128,18 @@ def run(
     identity_dir = out_dir / "data" / country
     identity_dir.mkdir(parents=True, exist_ok=True)
     identity_path = identity_dir / "identity.json"
+    next_identity_path = work_dir / "identity.next.json"
+    if identity_path.exists():
+        shutil.copyfile(identity_path, next_identity_path)
+    elif next_identity_path.exists():
+        next_identity_path.unlink()
 
     run_merge(
         ndjson_paths,
-        identity_path,
+        next_identity_path,
         canon_path,
         build_version=data_version,
+        authoritative_source_ids=set(included_source_ids),
     )
 
     # Build.
@@ -133,7 +150,11 @@ def run(
         country=country,
         data_version=data_version,
         required_source_ids=set(included_source_ids),
+        enforce_expected_counts=not smoke,
     )
+
+    # Commit registry state only after every publication gate succeeded.
+    os.replace(next_identity_path, identity_path)
 
     return site_manifest
 
@@ -163,6 +184,13 @@ def main() -> None:
         help="Comma-separated source ids to include (empty = all)",
     )
     ap.add_argument("--only-runtime", default="github-action")
+    ap.add_argument(
+        "--prebuilt",
+        action="append",
+        default=[],
+        metavar="SOURCE_ID=PATH",
+        help="Add an already-normalized NDJSON stream (repeatable)",
+    )
     args = ap.parse_args()
 
     exclude_ids: set[str] | None = (
@@ -171,6 +199,13 @@ def main() -> None:
     include_ids: set[str] | None = (
         {s for s in args.include.split(",") if s} or None
     )
+
+    prebuilt_sources: dict[str, Path] = {}
+    for item in args.prebuilt:
+        source_id, separator, path = item.partition("=")
+        if not separator or not source_id or not path:
+            ap.error("--prebuilt must be SOURCE_ID=PATH")
+        prebuilt_sources[source_id] = Path(path)
 
     manifest = run(
         Path(args.sources),
@@ -181,6 +216,7 @@ def main() -> None:
         only_runtime=args.only_runtime,
         include_ids=include_ids,
         exclude_ids=exclude_ids,
+        prebuilt_sources=prebuilt_sources,
         smoke=args.smoke,
     )
     print(f"built: {list(manifest.keys())}")

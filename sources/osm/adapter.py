@@ -79,7 +79,11 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
             categories=cats,
             lat=lat, lon=lon, country=MANIFEST.country,
             fetched_at=fetched_at,
-            field_provenance={"name": MANIFEST.id, "lat": MANIFEST.id, "lon": MANIFEST.id},
+            field_provenance={
+                "name": MANIFEST.id, "categories": MANIFEST.id,
+                "lat": MANIFEST.id, "lon": MANIFEST.id, "country": MANIFEST.id,
+                **({"external_ids": MANIFEST.id} if ext else {}),
+            },
             external_ids=ext,
         )
 

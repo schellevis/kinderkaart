@@ -46,8 +46,8 @@ def is_match(a: SourcePOI, b: SourcePOI) -> bool:
 
 
 def _cell(lat: float, lon: float) -> tuple[int, int]:
-    # ~0.01 deg ≈ 1.1 km blocking cell; compare own + 8 neighbours.
-    return (round(lat * 100), round(lon * 100))
+    # ~0.02 deg: adjacent cells cover the 2 km strong-key sanity radius too.
+    return (round(lat * 50), round(lon * 50))
 
 
 def cluster(pois: list[SourcePOI]) -> list[list[int]]:

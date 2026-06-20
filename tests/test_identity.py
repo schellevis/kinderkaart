@@ -41,6 +41,8 @@ def test_deletion_tombstones(tmp_path):
     reg = Registry.load(str(tmp_path / "id.json"))
     reg.assign(_mk([["osm/node/1"]]))
     reg.assign(_mk([["osm/node/2"]]))  # node/1 gone
+    assert not reg.is_tombstone("osm/node/1")  # one missing build is tolerated
+    reg.assign(_mk([["osm/node/2"]]), observation_id="next-build")
     assert reg.is_tombstone("osm/node/1")
 
 
@@ -105,7 +107,7 @@ def test_assign_returns_distinct_ids_invariant():
             ]
         )
     )
-    assert reg.is_tombstone("osm/node/9")  # deletion
+    assert not reg.is_tombstone("osm/node/9")  # grace period
     assert len(set(ids.values())) == len(ids)
 
 
@@ -125,3 +127,15 @@ def test_registry_file_idempotent_with_delete_and_merge(tmp_path):
     reg2.assign(build2)  # same clusters re-assigned
     reg2.save(str(p2))
     assert p2.read_text() == first  # byte-identical
+
+
+def test_partial_source_scope_does_not_delete_other_sources():
+    reg = Registry.load("/nonexistent.json")
+    reg.assign(_mk([["osm/node/1"], ["rce-musea/m1"]]))
+    reg.assign(
+        _mk([["rce-musea/m1"]]),
+        authoritative_source_ids={"rce-musea"},
+        observation_id="partial-rce-build",
+    )
+    assert not reg.is_tombstone("osm/node/1")
+    assert reg.entries["osm/node/1"]["status"] == "active"

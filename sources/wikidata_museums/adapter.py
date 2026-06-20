@@ -83,7 +83,11 @@ def normalize(path: Path, *, fetched_at: datetime) -> Iterator[SourcePOI]:
     for qid in order:
         rec = by_qid[qid]
         lat, lon = _parse_point(sorted(rec["coords"])[0])  # stable rule
-        provenance = {"name": MANIFEST.id, "lat": MANIFEST.id, "lon": MANIFEST.id}
+        provenance = {
+            "name": MANIFEST.id, "categories": MANIFEST.id,
+            "lat": MANIFEST.id, "lon": MANIFEST.id, "country": MANIFEST.id,
+            "external_ids": MANIFEST.id,
+        }
         website = None
         if rec["websites"]:
             website = sorted(rec["websites"])[0]  # stable rule

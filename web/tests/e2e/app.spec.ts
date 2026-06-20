@@ -89,17 +89,30 @@ test.describe("2. Filter changes counts — cluster oracle", () => {
     const result = await page.evaluate(() => {
       const kk = (window as unknown as { __kinderkaart?: {
         filteredCount: () => number;
+        clusterer: {
+          getClusters: (
+            bbox: [number, number, number, number], zoom: number
+          ) => Array<{ properties: { cluster: boolean; point_count?: number } }>;
+        };
         manifest: { nl: { counts: Record<string, number> } };
       } }).__kinderkaart;
       if (!kk) return null;
+      const clusteredTotal = kk.clusterer
+        .getClusters([-180, -90, 180, 90], 0)
+        .reduce(
+          (sum, feature) => sum + (feature.properties.cluster ? feature.properties.point_count! : 1),
+          0
+        );
       return {
         filteredCount: kk.filteredCount(),
         manifestMuseumCount: kk.manifest.nl.counts["museum"],
+        clusteredTotal,
       };
     });
 
     expect(result).not.toBeNull();
     expect(result!.filteredCount).toBe(result!.manifestMuseumCount);
+    expect(result!.clusteredTotal).toBe(result!.filteredCount);
   });
 });
 
@@ -254,6 +267,25 @@ test.describe("6. Favorites persist", () => {
     expect(storedAfter).not.toBeNull();
     const favsAfter = JSON.parse(storedAfter!);
     expect(favsAfter).toEqual(favs);
+  });
+
+  test("favorite aliases migrate to the current poi_id on load", async ({ page }) => {
+    const oldId = "wikidata-museums/old-rijksmuseum";
+    const currentId = "rce-musea/overzichtmusea.1";
+    await page.addInitScript((id) => {
+      localStorage.setItem("kinderkaart:favs", JSON.stringify([id]));
+    }, oldId);
+    await page.route("**/detail/0.json", async (route) => {
+      const response = await route.fetch();
+      const body = await response.json() as Record<string, unknown>;
+      body[oldId] = { redirect_to: currentId };
+      await route.fulfill({ response, json: body });
+    });
+
+    await page.goto("/");
+    await waitForLoad(page);
+    const stored = await page.evaluate(() => localStorage.getItem("kinderkaart:favs"));
+    expect(JSON.parse(stored!)).toEqual([currentId]);
   });
 });
 

@@ -32,19 +32,15 @@ These sources require interactive credentials or a paid API key and are **not ru
    > When/if it is added (a `sources/museum_nl/` module with a `snapshot`+`normalize` adapter), it
    > follows the same `snapshot --output PATH` / `normalize PATH` contract as the other adapters.
 
-3. Re-run the orchestrator with `--include` to inject the NDJSON before the merge step. The `--include` flag limits which adapters run via their manifests; for a source not wired as `github-action` you can also pass the pre-built NDJSON directly:
+3. Pass the normalized stream explicitly to the orchestrator with `--prebuilt`:
 
    ```bash
-   # Copy the NDJSON into the work dir that the orchestrator will pick up
-   cp /tmp/restaurants.ndjson /tmp/work/restaurants-agent.ndjson
-
-   # Then run the orchestrator pointing at the existing work dir
-   # (sources with existing NDJSON are merged; others are fetched live)
    uv run python -m scripts.build_pipeline \
        --sources sources \
        --work /tmp/work \
        --out site \
        --country nl \
+       --prebuilt restaurants-agent=/tmp/restaurants.ndjson \
        --data-version "$(date -u +%Y.%m.%d)-local"
    ```
 
@@ -112,4 +108,4 @@ git push
 gh workflow run data-refresh.yml --ref main
 ```
 
-This respects the `concurrency: group: data-refresh` lock, so concurrent runs will queue rather than race the identity-registry commit.
+This respects the shared `concurrency: group: identity-registry` lock, so refresh and deploy runs queue rather than race the registry commit.

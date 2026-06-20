@@ -150,6 +150,7 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
   ageInput.min = "0";
   ageInput.max = "18";
   ageInput.placeholder = "–";
+  ageInput.value = opts.filter.ageForChild == null ? "" : String(opts.filter.ageForChild);
   ageInput.setAttribute("aria-label", "Leeftijd van het kind");
 
   ageInput.addEventListener("input", () => {
@@ -164,6 +165,31 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
   ageWrapper.appendChild(ageLabel);
   ageWrapper.appendChild(ageInput);
   bar.appendChild(ageWrapper);
+
+  const distanceLabel = document.createElement("label");
+  distanceLabel.className = "age-filter";
+  distanceLabel.appendChild(document.createTextNode("Afstand: "));
+  const distance = document.createElement("select");
+  const distanceOptions: Array<[string, number | null]> = [
+    ["Alle", null], ["5 km", 5000], ["10 km", 10000],
+    ["25 km", 25000], ["50 km", 50000],
+  ];
+  for (const [label, value] of distanceOptions) {
+    const option = document.createElement("option");
+    option.textContent = label;
+    option.value = value == null ? "" : String(value);
+    option.selected = value === opts.filter.maxDistanceM;
+    distance.appendChild(option);
+  }
+  distance.addEventListener("change", () => {
+    opts.filter = {
+      ...opts.filter,
+      maxDistanceM: distance.value ? Number(distance.value) : null,
+    };
+    opts.onFilterChange(opts.filter);
+  });
+  distanceLabel.appendChild(distance);
+  bar.appendChild(distanceLabel);
 
   return bar;
 }

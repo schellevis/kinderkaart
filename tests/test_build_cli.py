@@ -57,3 +57,34 @@ def test_gate_failure_keeps_last_known_good(tmp_path):
                    required_source_ids={"osm"})
     # manifest.json unchanged (last-known-good)
     assert (out / "data" / "manifest.json").read_text() == manifest_before
+
+
+def test_expected_source_count_is_a_publish_gate(tmp_path):
+    sources = tmp_path / "sources"
+    source = sources / "tiny"
+    source.mkdir(parents=True)
+    (source / "manifest.yaml").write_text(
+        """schema_version: 1
+id: tiny
+name: Tiny
+country: nl
+endpoint: https://example.com/data
+license: CC0-1.0
+license_url: https://creativecommons.org/publicdomain/zero/1.0/
+license_evidence_date: 2026-06-19
+republication_terms: Public domain
+attribution: null
+runtime: github-action
+expected_count: [2, 3]
+category_map:
+  museum: [museum]
+entrypoint: adapter.py
+"""
+    )
+    canon = tmp_path / "canon.ndjson"
+    _write_canon(canon, [("tiny/1", "tiny")])
+    with pytest.raises(BuildGateError, match="expected_count"):
+        build_site(
+            canon, sources, tmp_path / "out", country="nl", data_version="v1",
+            required_source_ids={"tiny"}, enforce_expected_counts=True,
+        )

@@ -15,7 +15,7 @@ manually (or by an agent in a codespace) and verified by a human before inclusio
    - `website` (optional but recommended)
    - `evidence` list with at least one entry having `direct: true` and a signal from:
      `kindermenu`, `speelhoek`, `kinderstoel`, `verschoontafel`
-   - Each evidence entry must have `signal`, `direct`, `source_url`, and `evidence_date`
+   - Each evidence entry must have `signal`, `direct`, `source_record_id`, `source_url`, and `evidence_date`
 
    An agent may draft entries; a human must verify each direct signal against the source URL.
 
@@ -24,9 +24,10 @@ manually (or by an agent in a codespace) and verified by a human before inclusio
    uv run python -m sources.restaurants_agent.adapter normalize curated.yaml --fetched-at 2026-06-19T00:00:00+00:00
    ```
 
-4. Feed the NDJSON to the merge via the Plan 6 orchestrator `--include` flag:
+4. Feed the NDJSON to the orchestrator explicitly:
    ```
-   uv run python -m data_pipeline.orchestrator --include restaurants-agent ...
+   uv run python -m scripts.build_pipeline \
+       --prebuilt restaurants-agent=/tmp/restaurants.ndjson ...
    ```
 
 ## Evidence gate

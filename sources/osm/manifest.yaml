@@ -16,5 +16,7 @@ category_map:
   "leisure=playground": [playground]
   "tourism=zoo": [zoo]
   "zoo=petting_zoo": [petting_zoo]
+  "leisure=swimming_pool": [pool]
+  "amenity=swimming_pool": [pool]
   "leisure=water_park": [play_park]
 entrypoint: adapter.py

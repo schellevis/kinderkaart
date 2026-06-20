@@ -23,6 +23,8 @@ def test_priority_wins_and_provenance_records_source_record():
     assert poi.field_provenance["website"] == "wikidata-museums/Q190804"
     assert poi.external_ids == {"wikidata": "Q190804"}
     assert poi.categories == ["museum"]
+    assert poi.field_provenance["/categories/0"] == "rce-musea/m1"
+    assert poi.field_provenance["/external_ids/wikidata"] == "wikidata-museums/Q190804"
     assert {r.source_id for r in poi.contributing} == {"rce-musea", "wikidata-museums"}
     # contributing sorted by source rank: rce-musea (rank 0) first
     assert poi.contributing[0].source_id == "rce-musea"
@@ -36,3 +38,14 @@ def test_categories_unioned_across_cluster():
                   lat=52.0, lon=5.0, country="nl", fetched_at=T)
     poi = merge_cluster([a, b], poi_id="osm/way/1")
     assert set(poi.categories) == {"zoo", "petting_zoo"}
+
+
+def test_tags_survive_merge_with_record_level_provenance():
+    source = SourcePOI(
+        source_id="restaurants-agent", source_record_id="r1", name="Restaurant",
+        categories=["restaurant_kidfriendly"], lat=52.0, lon=5.0, country="nl",
+        fetched_at=T, tags={"evidence": [{"direct": True}]},
+    )
+    poi = merge_cluster([source], poi_id="restaurants-agent/r1")
+    assert poi.tags == source.tags
+    assert poi.field_provenance["/tags/evidence"] == "restaurants-agent/r1"

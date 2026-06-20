@@ -64,6 +64,21 @@ async function bootstrap(): Promise<void> {
     const allPoints = decodePoints(payload);
     console.log(`[kinderkaart] ${allPoints.length} points decoded`);
 
+    // Migrate persisted favorites that now resolve through an identity alias.
+    const favorites = new Favorites();
+    const currentIds = new Set(allPoints.map((point) => point.poiId));
+    for (const oldId of favorites.list().filter((id) => !currentIds.has(id))) {
+      try {
+        const response = await fetch(detailUrl(cm.paths.detail, oldId, cm.shard_count));
+        if (!response.ok) continue;
+        const shard: Record<string, { redirect_to?: string }> = await response.json();
+        const redirect = shard[oldId]?.redirect_to;
+        if (redirect && currentIds.has(redirect)) favorites.replace(oldId, redirect);
+      } catch {
+        // Keep unavailable favorites: they may reappear in a later data version.
+      }
+    }
+
     // 3. Load license info
     let licenseText = "© Contribuanten";
     try {
@@ -196,10 +211,12 @@ function renderClusters(
 ): void {
   const state = store.get();
   const favs = new Favorites();
+  const center = map.getCenter();
+  const reference = state.userLocation ?? { lat: center.lat, lon: center.lng };
 
   clusterer.update((pt) => {
     if (state.favoritesOnly && !favs.has(pt.poiId)) return false;
-    return matches(pt, state.filter, state.userLocation ?? undefined);
+    return matches(pt, state.filter, reference);
   });
 
   updateClusterData(map, clusterer);
@@ -230,6 +247,8 @@ function buildUI(
   // ── Helper: apply filters + render everything ──
   function applyAndRender(): void {
     const state = store.get();
+    const center = map.getCenter();
+    const reference = state.userLocation ?? { lat: center.lat, lon: center.lng };
 
     // Compute filtered points for the list
     let listPoints: Point[];
@@ -239,15 +258,15 @@ function buildUI(
       listPoints = allPoints.filter((pt) => {
         if (state.favoritesOnly && !favs.has(pt.poiId)) return false;
         if (!ids.has(pt.poiId)) return false;
-        return matches(pt, state.filter, state.userLocation ?? undefined);
+        return matches(pt, state.filter, reference);
       });
     } else if (state.favoritesOnly) {
       listPoints = allPoints.filter(
-        (pt) => favs.has(pt.poiId) && matches(pt, state.filter, state.userLocation ?? undefined)
+        (pt) => favs.has(pt.poiId) && matches(pt, state.filter, reference)
       );
     } else {
       listPoints = allPoints.filter((pt) =>
-        matches(pt, state.filter, state.userLocation ?? undefined)
+        matches(pt, state.filter, reference)
       );
     }
 
@@ -256,7 +275,7 @@ function buildUI(
     // Update clusterer with full filter (map shows all matching points)
     clusterer.update((pt) => {
       if (state.favoritesOnly && !favs.has(pt.poiId)) return false;
-      return matches(pt, state.filter, state.userLocation ?? undefined);
+      return matches(pt, state.filter, reference);
     });
 
     updateClusterData(map, clusterer);
@@ -279,20 +298,34 @@ function buildUI(
     store.update({ selectedPoiId: poiId });
 
     // Fly to POI location
-    const pt = allPoints.find((p) => p.poiId === poiId);
+    let pt = allPoints.find((p) => p.poiId === poiId);
     if (pt) {
       map.flyTo({ center: [pt.lon, pt.lat], zoom: Math.max(map.getZoom(), 14) });
     }
 
     // Lazily fetch detail shard
-    const shardUrl = detailUrl(cm.paths.detail, poiId, cm.shard_count);
     let record: DetailRecord | null = null;
 
     try {
-      const res = await fetch(shardUrl);
-      if (res.ok) {
-        const shard: Record<string, DetailRecord> = await res.json();
-        record = shard[poiId] ?? null;
+      for (let redirects = 0; redirects < 5; redirects++) {
+        const shardUrl = detailUrl(cm.paths.detail, poiId, cm.shard_count);
+        const res = await fetch(shardUrl);
+        if (!res.ok) break;
+        const shard: Record<string, DetailRecord | { redirect_to: string }> = await res.json();
+        const found = shard[poiId];
+        if (found && "redirect_to" in found) {
+          const oldId = poiId;
+          poiId = found.redirect_to;
+          favs.replace(oldId, poiId);
+          store.update({ selectedPoiId: poiId });
+          pt = allPoints.find((p) => p.poiId === poiId);
+          if (pt) {
+            map.flyTo({ center: [pt.lon, pt.lat], zoom: Math.max(map.getZoom(), 14) });
+          }
+          continue;
+        }
+        record = found ?? null;
+        break;
       }
     } catch (err) {
       console.warn("[kinderkaart] detail fetch failed:", err);
@@ -409,7 +442,15 @@ function buildUI(
   }
 
   // ── Map move → re-cluster ──
-  const onMapMove = () => updateClusterData(map, clusterer);
+  const onMapMove = () => {
+    const center = map.getCenter();
+    store.update({ viewLat: center.lat, viewLon: center.lng, viewZoom: map.getZoom() });
+    if (store.get().filter.maxDistanceM !== null && store.get().userLocation === null) {
+      applyAndRender();
+    } else {
+      updateClusterData(map, clusterer);
+    }
+  };
   map.on("moveend", onMapMove);
   map.on("zoomend", onMapMove);
 

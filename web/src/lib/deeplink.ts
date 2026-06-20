@@ -10,6 +10,11 @@ export interface DeepLinkState {
   poi?: string;
   q?: string;
   cats?: string[];
+  indoor?: boolean;
+  free?: boolean;
+  age?: number;
+  distance?: number;
+  favorites?: boolean;
 }
 
 export function encode(state: DeepLinkState): string {
@@ -20,6 +25,11 @@ export function encode(state: DeepLinkState): string {
   if (state.poi) params.set("poi", state.poi);
   if (state.q) params.set("q", state.q);
   if (state.cats && state.cats.length > 0) params.set("cats", state.cats.join(","));
+  if (state.indoor != null) params.set("indoor", String(state.indoor));
+  if (state.free != null) params.set("free", String(state.free));
+  if (state.age != null) params.set("age", String(state.age));
+  if (state.distance != null) params.set("distance", String(state.distance));
+  if (state.favorites) params.set("favorites", "true");
   return params.toString();
 }
 
@@ -55,6 +65,18 @@ export function decode(queryString: string): DeepLinkState {
   if (cats) {
     const list = cats.split(",").map((s) => s.trim()).filter(Boolean);
     if (list.length > 0) state.cats = list;
+  }
+
+  for (const key of ["indoor", "free", "favorites"] as const) {
+    const value = params.get(key);
+    if (value === "true" || value === "false") state[key] = value === "true";
+  }
+  for (const key of ["age", "distance"] as const) {
+    const value = params.get(key);
+    if (value !== null) {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed) && parsed >= 0) state[key] = parsed;
+    }
   }
 
   return state;

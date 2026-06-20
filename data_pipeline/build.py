@@ -5,11 +5,13 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from data_pipeline.build_detail import build_detail, shard_count_for
+from data_pipeline.build_detail import choose_shard_count
 from data_pipeline.build_manifest import build_license_report
 from data_pipeline.build_points import build_points
+from data_pipeline.manifest import load_manifest
 from data_pipeline.publish_gate import check
 from data_pipeline.schema import CanonicalPOI
+from data_pipeline.vocab import CATEGORIES
 
 
 class BuildGateError(Exception):
@@ -34,23 +36,49 @@ def _write_json(path: Path, payload: object) -> None:
 
 
 def build_site(canon_ndjson: Path, sources_dir: Path, out_dir: Path, country: str,
-               data_version: str, required_source_ids: set[str]) -> dict:
+               data_version: str, required_source_ids: set[str],
+               enforce_expected_counts: bool = False) -> dict:
     canon = _load_canon(canon_ndjson)
     errors = check(canon, required_source_ids)
+    manifest_paths = sorted(sources_dir.glob("*/manifest.yaml"))
+    manifest_paths = [p for p in manifest_paths if p.parent.name != "_template"]
+    loaded_manifests = [(load_manifest(path), path) for path in manifest_paths]
+    manifests = {manifest.id: (manifest, path) for manifest, path in loaded_manifests}
+    contributing_ids = {ref.source_id for poi in canon for ref in poi.contributing}
+    if enforce_expected_counts:
+        refs = {
+            (ref.source_id, ref.source_record_id)
+            for poi in canon
+            for ref in poi.contributing
+        }
+        counts = Counter(source_id for source_id, _ in refs)
+        for source_id in sorted(required_source_ids):
+            expected = manifests[source_id][0].expected_count
+            if expected is not None and not expected[0] <= counts[source_id] <= expected[1]:
+                errors.append(
+                    f"source count outside expected_count: {source_id}="
+                    f"{counts[source_id]} not in [{expected[0]}, {expected[1]}]"
+                )
     if errors:
         raise BuildGateError(errors)
+
+    try:
+        shard_count, shards = choose_shard_count(canon)
+    except ValueError as exc:
+        raise BuildGateError([str(exc)]) from exc
 
     version_dir = out_dir / "data" / country / data_version
     _write_json(version_dir / "points.json", build_points(canon))
 
-    shard_count = shard_count_for(len(canon))
-    shards = build_detail(canon, shard_count)
     for sh in range(shard_count):
         _write_json(version_dir / "detail" / f"{sh}.json", shards.get(sh, {}))
 
-    manifest_paths = sorted(sources_dir.glob("*/manifest.yaml"))
-    manifest_paths = [p for p in manifest_paths if p.parent.name != "_template"]
-    _write_json(version_dir / "license.json", build_license_report(manifest_paths))
+    included_manifest_paths = [
+        path for source_id, (_, path) in manifests.items() if source_id in contributing_ids
+    ]
+    _write_json(
+        version_dir / "license.json", build_license_report(included_manifest_paths)
+    )
 
     cat_counts: Counter = Counter()
     for poi in canon:
@@ -61,7 +89,7 @@ def build_site(canon_ndjson: Path, sources_dir: Path, out_dir: Path, country: st
     country_manifest = {
         "data_version": data_version,
         "shard_count": shard_count,
-        "categories": sorted({c for poi in canon for c in poi.categories}),
+        "categories": sorted(CATEGORIES),
         "paths": {
             "points": f"{base}/points.json",
             "detail": f"{base}/detail",
@@ -92,7 +120,7 @@ def main() -> None:
     req = {s for s in args.require.split(",") if s}
     try:
         build_site(Path(args.canon), Path(args.sources), Path(args.out), args.country,
-                   args.data_version, req)
+                   args.data_version, req, enforce_expected_counts=True)
     except BuildGateError as e:
         raise SystemExit(f"publish-gate FAILED (last-known-good kept): {e}")
     print(f"built {args.country}/{args.data_version}")

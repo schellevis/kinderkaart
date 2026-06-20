@@ -93,6 +93,7 @@ def download(
     hdrs = {"User-Agent": USER_AGENT}
     last_exc: Exception | None = None
     for attempt in range(1, max_attempts + 1):
+        start = output.tell()
         try:
             with client.stream(
                 "GET", url, params=params, headers=hdrs, timeout=timeout,
@@ -113,6 +114,8 @@ def download(
                     digest.update(chunk)
                 return digest.hexdigest()
         except httpx.HTTPError as exc:
+            output.seek(start)
+            output.truncate()
             last_exc = exc
             if attempt < max_attempts:
                 sleep(backoff * 2 ** (attempt - 1))

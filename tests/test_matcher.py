@@ -43,3 +43,11 @@ def test_cluster_groups_transitively_and_is_sorted():
     c = poi("osm", "node/5", "Speeltuin", 52.9, 4.0, cats=("playground",))
     clusters = cluster([a, b, c])
     assert clusters == [[0, 1], [2]]
+
+
+def test_strong_key_blocking_covers_full_two_km_sanity_radius():
+    a = poi("osm", "node/1", "A", 52.0, 5.0, external_ids={"wikidata": "Q1"})
+    b = poi("wikidata-museums", "Q1", "B", 52.015, 5.0,
+            external_ids={"wikidata": "Q1"})
+    assert is_match(a, b)
+    assert cluster([a, b]) == [[0, 1]]

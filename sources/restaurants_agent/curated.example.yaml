@@ -10,9 +10,11 @@
   evidence:
     - signal: speelhoek
       direct: true
+      source_record_id: "page:kids"
       source_url: "https://example.com/speelhoek/kids"
       evidence_date: "2026-06-19"
     - signal: nabije_speeltuin
       direct: false
+      source_record_id: "park:example"
       source_url: "https://example.com/park"
       evidence_date: "2026-06-19"

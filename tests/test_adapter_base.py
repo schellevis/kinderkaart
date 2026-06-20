@@ -148,3 +148,25 @@ def test_download_passes_params_and_returns_checksum():
     assert "a=b" in seen["url"]
     assert buf.getvalue() == b"hello"
     assert checksum == hashlib.sha256(b"hello").hexdigest()
+
+
+def test_download_discards_partial_bytes_before_transport_retry():
+    from data_pipeline.adapter_base import download
+
+    class BrokenStream(httpx.SyncByteStream):
+        def __iter__(self):
+            yield b"partial-"
+            raise httpx.ReadError("connection dropped")
+
+    calls = {"n": 0}
+
+    def handler(request):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            return httpx.Response(200, stream=BrokenStream())
+        return httpx.Response(200, content=b"complete")
+
+    buf = io.BytesIO()
+    with _client(handler) as client:
+        download("https://x/file", buf, client=client, sleep=_no_sleep)
+    assert buf.getvalue() == b"complete"

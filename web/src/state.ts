@@ -70,6 +70,11 @@ export class StateStore {
       poi: s.selectedPoiId ?? undefined,
       q: s.searchQuery || undefined,
       cats: cats.length > 0 ? cats : undefined,
+      indoor: s.filter.indoor ?? undefined,
+      free: s.filter.free ?? undefined,
+      age: s.filter.ageForChild ?? undefined,
+      distance: s.filter.maxDistanceM ?? undefined,
+      favorites: s.favoritesOnly || undefined,
     });
     const url = qs ? `?${qs}` : window.location.pathname;
     history.replaceState(null, "", url);
@@ -88,12 +93,17 @@ export function parseUrlState(): Partial<AppState> {
   if (dl.z != null) partial.viewZoom = dl.z;
   if (dl.poi) partial.selectedPoiId = dl.poi;
   if (dl.q) partial.searchQuery = dl.q;
-  if (dl.cats && dl.cats.length > 0) {
+  if (dl.cats || dl.indoor != null || dl.free != null || dl.age != null || dl.distance != null) {
     partial.filter = {
       ...DEFAULT_STATE.filter,
-      categories: new Set(dl.cats),
+      categories: dl.cats ? new Set(dl.cats) : null,
+      indoor: dl.indoor ?? null,
+      free: dl.free ?? null,
+      ageForChild: dl.age ?? null,
+      maxDistanceM: dl.distance ?? null,
     };
   }
+  if (dl.favorites != null) partial.favoritesOnly = dl.favorites;
 
   return partial;
 }
