@@ -83,8 +83,8 @@ def _to_poi(slug: str, html: str, fetched_at: datetime) -> SourcePOI | None:
         address = Address(
             street=street or None,
             housenumber=house,
-            postcode=(addr.get("postalCode") or None),
-            city=(addr.get("addressLocality") or None),
+            postcode=(str(addr["postalCode"]) if addr.get("postalCode") else None),
+            city=(str(addr["addressLocality"]) if addr.get("addressLocality") else None),
         )
         prov["address"] = MANIFEST.id
 
