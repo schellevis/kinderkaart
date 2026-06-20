@@ -63,3 +63,23 @@ def test_normalize_website():
     assert normalize_website(["http://a.nl", "http://b.nl"]) == "http://a.nl"
     assert normalize_website("mailto:x@y.nl") is None
     assert normalize_website(None) is None
+
+
+def test_normalize_website_empty_list():
+    assert normalize_website([]) is None
+
+
+def test_extract_meta_description_content_before_name():
+    # content= appears before name="description" — must still extract correctly
+    html = '<html><head><meta content="Reversed order." name="description"></head></html>'
+    assert extract_meta_description(html) == "Reversed order."
+
+
+def test_extract_meta_description_og_fallback():
+    # no name="description" — should fall back to og:description
+    html = '<html><head><meta property="og:description" content="OG fallback."></head></html>'
+    assert extract_meta_description(html) == "OG fallback."
+
+
+def test_split_street_hyphenated_housenumber():
+    assert split_street("Kalverstraat 12-14") == ("Kalverstraat", "12-14")

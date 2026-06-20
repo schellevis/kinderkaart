@@ -8,15 +8,13 @@ _LD_RE = re.compile(
     r'<script[^>]+type="application/ld\+json"[^>]*>(.*?)</script>',
     re.DOTALL | re.IGNORECASE,
 )
-_META_DESC_RE = re.compile(
-    r'<meta[^>]+name="description"[^>]+content="([^"]*)"', re.IGNORECASE
-)
-_OG_DESC_RE = re.compile(
-    r'<meta[^>]+property="og:description"[^>]+content="([^"]*)"', re.IGNORECASE
-)
+_META_TAG_RE = re.compile(r"<meta\b([^>]*)>", re.IGNORECASE)
+_ATTR_NAME_RE = re.compile(r'\bname="description"', re.IGNORECASE)
+_ATTR_PROP_RE = re.compile(r'\bproperty="og:description"', re.IGNORECASE)
+_ATTR_CONTENT_RE = re.compile(r'\bcontent="([^"]*)"', re.IGNORECASE)
 _LOC_RE = re.compile(r"<loc>\s*(https?://[^<\s]+?)\s*</loc>", re.IGNORECASE)
 _DETAIL_RE = re.compile(r"^https?://(?:www\.)?museum\.nl/nl/([^/]+)/?$", re.IGNORECASE)
-_STREET_RE = re.compile(r"^(.*?)\s+(\d+\s*\w*)$")
+_STREET_RE = re.compile(r"^(.*?)\s+(\d+[\w-]*)$")
 
 
 def extract_slugs(sitemap_xml: str) -> list[str]:
@@ -55,10 +53,20 @@ def extract_museum_jsonld(html: str) -> dict | None:
 
 
 def extract_meta_description(html: str) -> str | None:
-    m = _META_DESC_RE.search(html) or _OG_DESC_RE.search(html)
-    if not m:
-        return None
-    return m.group(1).strip() or None
+    desc: str | None = None
+    og: str | None = None
+    for tag_m in _META_TAG_RE.finditer(html):
+        attrs = tag_m.group(1)
+        content_m = _ATTR_CONTENT_RE.search(attrs)
+        if content_m is None:
+            continue
+        value = content_m.group(1).strip() or None
+        if _ATTR_NAME_RE.search(attrs):
+            desc = value
+            break  # name="description" has priority; stop searching
+        if og is None and _ATTR_PROP_RE.search(attrs):
+            og = value
+    return desc if desc is not None else og
 
 
 def split_street(street_address: str) -> tuple[str, str | None]:
