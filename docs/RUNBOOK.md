@@ -28,9 +28,15 @@ These sources require interactive credentials or a paid API key and are **not ru
        --fetched-at "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)" > /tmp/restaurants.ndjson
    ```
 
-   > **Note:** the `museum.nl` source is **not yet implemented** — it is release-gated (see below).
-   > When/if it is added (a `sources/museum_nl/` module with a `snapshot`+`normalize` adapter), it
-   > follows the same `snapshot --output PATH` / `normalize PATH` contract as the other adapters.
+   The `museum.nl` source is now implemented (`codespace-only`). Run it the same way:
+
+   ```bash
+   uv run python -m sources.museum_nl.adapter snapshot --output /tmp/museum_nl.raw.ndjson
+   uv run python -m sources.museum_nl.adapter normalize /tmp/museum_nl.raw.ndjson \
+       --fetched-at "$(date -u +%Y-%m-%dT%H:%M:%S+00:00)" > /tmp/museum_nl.ndjson
+   ```
+
+   Then pass it via `--prebuilt museum-nl=/tmp/museum_nl.ndjson` (same pattern as below).
 
 3. Pass the normalized stream explicitly to the orchestrator with `--prebuilt`:
 
@@ -53,9 +59,9 @@ permission from museum.nl is secured**. museum.nl data may now appear in public 
 
 Remaining work to actually publish museum.nl data:
 
-1. Build the `sources/museum_nl/` module (manifest + adapter, same contract as the others),
-   `runtime: codespace-only`, with the permission + `license_evidence_date` recorded in the manifest.
-2. Curate/normalize its output and include it via `--prebuilt` (codespace-only, as above).
+1. The `sources/museum_nl/` module is **built** (`codespace-only`, implemented and tested). Run it in
+   a Codespace to produce normalized NDJSON (see "Running a codespace-only source manually" above).
+2. Include its output via `--prebuilt museum-nl=/tmp/museum_nl.ndjson` (codespace-only, as above).
 3. Trigger `deploy-pages.yml` (see below) — manual, with an explicit human go-ahead.
 
 ---

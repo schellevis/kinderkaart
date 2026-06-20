@@ -45,8 +45,8 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
   `build_detail.py`, `publish_gate.py`, `build_manifest.py`, `build.py` (CLI).
 - `sources/<id>/` — one folder per data source: `manifest.yaml` + `adapter.py`. `_template/` is the
   copyable starting point. Implemented: `osm`, `wikidata_museums`, `rce_musea`,
-  `den_haag_speeltuinen`, `eindhoven_speeltuinen` (all `github-action`); `restaurants_agent`
-  (`codespace-only`). `sources/manifest.schema.json` is the exported manifest JSON schema.
+  `den_haag_speeltuinen`, `eindhoven_speeltuinen` (all `github-action`); `restaurants_agent`,
+  `museum_nl` (both `codespace-only`). `sources/manifest.schema.json` is the exported manifest JSON schema.
 - `scripts/build_pipeline.py` — orchestrator: snapshot+normalize all included sources → merge →
   build. `--smoke` uses fixtures (no live fetch / no OSM download).
 - `web/` — the front-end (`src/lib/*` pure logic with vitest; `src/map.ts`/`ui/*` MapLibre shell;
@@ -108,9 +108,10 @@ Web (Node available; run from `web/`):
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
 - **Two go/no-go gates before broad public publication** (spec §11) — **both PASSED 2026-06-20:**
   (1) external legal review of the combined ODbL + CC-BY database = **go**; (2) **museum.nl** written
-  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module is
-  specced + planned — see `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
-  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`; implementation pending). The
+  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module
+  exists (`codespace-only`), implemented and tested — see
+  `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
+  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`). The
   attribution/share-alike obligations above still stand.
 - `deploy-pages.yml` remains `workflow_dispatch`-only. The legal block is lifted, but still do NOT
   trigger a public deploy autonomously — it is outward-facing and hard to reverse; require an
