@@ -1,0 +1,17 @@
+schema_version: 1
+id: template-source            # rename to your kebab-case id
+name: Human readable name
+country: nl
+endpoint: "https://example.com/data"   # or null for codespace-only/agent sources
+license: CC-BY-4.0
+license_url: "https://creativecommons.org/licenses/by/4.0/"
+license_evidence_date: "2026-06-19"
+republication_terms: "Attribute the source; redistribution allowed"
+attribution: "© Source name"
+runtime: github-action          # or: codespace-only
+update_frequency: weekly
+expected_count: [100, 5000]
+contact_policy: "User-Agent with contact; honor 429/Retry-After"
+category_map:
+  "source-type-key": [playground]
+entrypoint: adapter.py

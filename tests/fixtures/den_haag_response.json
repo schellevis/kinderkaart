@@ -1,0 +1,11 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {"type": "Feature",
+     "geometry": {"type": "Point", "coordinates": [4.300, 52.070]},
+     "properties": {"straatnaam": "Laan van Meerdervoort", "buurt": "Vruchtenbuurt"}},
+    {"type": "Feature",
+     "geometry": {"type": "Polygon", "coordinates": [[[4.30,52.07],[4.302,52.07],[4.302,52.072],[4.30,52.072],[4.30,52.07]]]},
+     "properties": {"straatnaam": "Thomsonlaan"}}
+  ]
+}

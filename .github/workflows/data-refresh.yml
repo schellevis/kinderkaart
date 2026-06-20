@@ -1,0 +1,53 @@
+name: Data Refresh
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"  # Every Monday at 03:00 UTC
+  workflow_dispatch: {}
+
+concurrency:
+  group: identity-registry
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Compute data version
+        run: echo "DATA_VERSION=$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Run pipeline (live)
+        run: |
+          uv run python -m scripts.build_pipeline \
+            --sources sources \
+            --work /tmp/work \
+            --out site \
+            --country nl \
+            --data-version "$DATA_VERSION" \
+            --exclude ""
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-data
+          path: site/
+
+      - name: Commit updated identity registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/data/nl/identity.json
+          git diff --quiet --cached || git commit -m "chore: refresh identity registry [skip ci]"
+          git push

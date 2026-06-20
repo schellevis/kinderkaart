@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="test">
+  <node id="1" lat="52.36" lon="4.885" version="1">
+    <tag k="leisure" v="playground"/>
+    <tag k="name" v="Speeltuin Vondelpark"/>
+    <tag k="wikidata" v="Q42"/>
+  </node>
+  <node id="2" lat="52.0" lon="5.0" version="1"/>
+  <node id="3" lat="52.002" lon="5.0" version="1"/>
+  <node id="4" lat="52.002" lon="5.004" version="1"/>
+  <node id="5" lat="52.0" lon="5.004" version="1"/>
+  <way id="100" version="1">
+    <nd ref="2"/><nd ref="3"/><nd ref="4"/><nd ref="5"/><nd ref="2"/>
+    <tag k="tourism" v="zoo"/>
+    <tag k="zoo" v="petting_zoo"/>
+    <tag k="name" v="Kinderboerderij De Buurt"/>
+  </way>
+  <node id="9" lat="52.1" lon="5.1" version="1">
+    <tag k="amenity" v="bench"/>
+  </node>
+</osm>

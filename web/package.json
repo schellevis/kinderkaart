@@ -1,0 +1,34 @@
+{
+  "name": "kinderkaart-web",
+  "version": "1.0.0",
+  "description": "Kinderkaart — kid-friendly activities map for NL",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview --port 4173",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "e2e": "playwright test"
+  },
+  "dependencies": {
+    "flexsearch": "^0.8.212",
+    "maplibre-gl": "^5.24.0",
+    "supercluster": "^8.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0",
+    "@types/flexsearch": "^0.7.6",
+    "@types/node": "^25.9.3",
+    "@types/supercluster": "^7.1.3",
+    "@typescript-eslint/eslint-plugin": "^8.61.1",
+    "@typescript-eslint/parser": "^8.61.1",
+    "@vitest/coverage-v8": "^4.1.9",
+    "eslint": "^10.5.0",
+    "jsdom": "^29.1.1",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16",
+    "vitest": "^4.1.9"
+  }
+}

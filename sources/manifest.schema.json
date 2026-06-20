@@ -1,0 +1,134 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "attribution": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attribution"
+    },
+    "category_map": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Category Map",
+      "type": "object"
+    },
+    "contact_policy": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Contact Policy"
+    },
+    "country": {
+      "title": "Country",
+      "type": "string"
+    },
+    "endpoint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Endpoint"
+    },
+    "entrypoint": {
+      "title": "Entrypoint",
+      "type": "string"
+    },
+    "expected_count": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expected Count"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "license": {
+      "title": "License",
+      "type": "string"
+    },
+    "license_evidence_date": {
+      "format": "date",
+      "title": "License Evidence Date",
+      "type": "string"
+    },
+    "license_url": {
+      "title": "License Url",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "republication_terms": {
+      "title": "Republication Terms",
+      "type": "string"
+    },
+    "runtime": {
+      "title": "Runtime",
+      "type": "string"
+    },
+    "schema_version": {
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "update_frequency": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Update Frequency"
+    }
+  },
+  "required": [
+    "schema_version",
+    "id",
+    "name",
+    "country",
+    "license",
+    "license_url",
+    "license_evidence_date",
+    "republication_terms",
+    "runtime",
+    "category_map",
+    "entrypoint"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

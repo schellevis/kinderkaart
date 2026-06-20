@@ -1,0 +1,103 @@
+# LEGAL GATE: Do NOT trigger this workflow until BOTH conditions are satisfied (spec §11):
+#   1. ODbL combined-DB legal review is "go" (OSM data combined with CC-BY sources reviewed).
+#   2. museum.nl data is either absent from the build OR written permission from museum.nl is secured.
+# This workflow is workflow_dispatch ONLY — no push or schedule triggers.
+
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  pages: write
+  id-token: write
+  contents: write
+
+concurrency:
+  group: identity-registry
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install Python dependencies
+        run: uv sync
+
+      - name: Compute data version
+        run: echo "DATA_VERSION=$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+
+      - name: Run pipeline (live) to produce site/data
+        run: |
+          uv run python -m scripts.build_pipeline \
+            --sources sources \
+            --work /tmp/work \
+            --out site \
+            --country nl \
+            --data-version "$DATA_VERSION" \
+            --exclude ""
+
+      - name: Build web app
+        run: |
+          cd web
+          npm ci
+          npm run build
+
+      - name: Assemble public site
+        run: |
+          mkdir -p public_site
+          cp -r web/dist/. public_site/
+          cp -r site/data public_site/data
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public_site
+
+      - name: Preserve identity registry for post-deploy commit
+        uses: actions/upload-artifact@v4
+        with:
+          name: deploy-identity
+          path: site/data/nl/identity.json
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Download deployed identity registry
+        uses: actions/download-artifact@v4
+        with:
+          name: deploy-identity
+          path: site/data/nl
+
+      - name: Commit deployed identity registry
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/data/nl/identity.json
+          git diff --quiet --cached || git commit -m "chore: persist deployed identity registry [skip ci]"
+          git push

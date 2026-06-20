@@ -1,0 +1,12 @@
+- name: "Restaurant De Speelhoek"
+  lat: 52.0907
+  lon: 5.1214
+  website: "https://example.com/speelhoek"
+  evidence:
+    - {signal: speelhoek, direct: true, source_record_id: "page:kids", source_url: "https://example.com/speelhoek/kids", evidence_date: "2026-06-19"}
+    - {signal: nabije_speeltuin, direct: false, source_record_id: "park:1", source_url: "https://example.com/park", evidence_date: "2026-06-19"}
+- name: "Café Zonder Bewijs"
+  lat: 52.10
+  lon: 5.12
+  evidence:
+    - {signal: nabije_speeltuin, direct: false, source_record_id: "park:2", source_url: "https://example.com/x", evidence_date: "2026-06-19"}
