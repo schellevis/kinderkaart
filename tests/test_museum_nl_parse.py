@@ -43,6 +43,25 @@ def test_extract_museum_jsonld_returns_museum_node():
     assert node["geo"]["latitude"] == 52.375083
 
 
+def test_extract_museum_jsonld_unescapes_string_fields():
+    html = """<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Museum","name":"Beeld &amp; Geluid",
+ "telephone":"&#x2B;31 35 6775555",
+ "address":{"@type":"PostalAddress","streetAddress":"Laan &amp; Straat 12",
+   "addressLocality":"&#x27;s-Gravenhage","postalCode":"1234 AB","addressCountry":"NL"},
+ "geo":{"@type":"GeoCoordinates","latitude":52.0,"longitude":4.0},
+ "sameAs":"www.example.nl?a=1&amp;b=2"}
+</script></head><body></body></html>"""
+    node = extract_museum_jsonld(html)
+    assert node is not None
+    assert node["name"] == "Beeld & Geluid"
+    assert node["telephone"] == "+31 35 6775555"
+    assert node["address"]["streetAddress"] == "Laan & Straat 12"
+    assert node["address"]["addressLocality"] == "'s-Gravenhage"
+    assert node["sameAs"] == "www.example.nl?a=1&b=2"
+
+
 def test_extract_museum_jsonld_none_for_non_museum():
     assert extract_museum_jsonld(THEME_HTML) is None
 
@@ -50,6 +69,14 @@ def test_extract_museum_jsonld_none_for_non_museum():
 def test_extract_meta_description():
     assert extract_meta_description(MUSEUM_HTML) == "Een mooi museum."
     assert extract_meta_description("<html></html>") is None
+
+
+def test_extract_meta_description_unescapes_entities():
+    html = (
+        '<html><head><meta name="description" '
+        'content="Het H&#x27;ART Museum is d&#xE9; plek."></head></html>'
+    )
+    assert extract_meta_description(html) == "Het H'ART Museum is dé plek."
 
 
 def test_split_street():

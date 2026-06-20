@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from html import unescape
 import json
 import re
 from collections.abc import Iterator
@@ -45,10 +46,22 @@ def _is_museum(node: dict) -> bool:
     return t == "Museum"
 
 
+def _unescape_json_strings(value: object) -> object:
+    if isinstance(value, str):
+        return unescape(value)
+    if isinstance(value, list):
+        return [_unescape_json_strings(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _unescape_json_strings(item) for key, item in value.items()}
+    return value
+
+
 def extract_museum_jsonld(html: str) -> dict | None:
     for node in _iter_jsonld(html):
         if _is_museum(node):
-            return node
+            return {
+                key: _unescape_json_strings(value) for key, value in node.items()
+            }
     return None
 
 
@@ -60,7 +73,7 @@ def extract_meta_description(html: str) -> str | None:
         content_m = _ATTR_CONTENT_RE.search(attrs)
         if content_m is None:
             continue
-        value = content_m.group(1).strip() or None
+        value = unescape(content_m.group(1)).strip() or None
         if _ATTR_NAME_RE.search(attrs):
             desc = value
             break  # name="description" has priority; stop searching
