@@ -121,7 +121,30 @@ Web (Node available; run from `web/`):
 
 ## Status
 
-All 7 plans + both spikes are implemented, tested, reviewed, and merge-ready on branch
-`kinderkaart-data-foundation`. Both legal gates above passed 2026-06-20. Remaining before a live
-public deploy: confirming the pipeline against real (not fixture) source data, and an explicit
-human go-ahead to run `deploy-pages.yml`.
+All 7 plans + both spikes are implemented, tested, and reviewed (the `kinderkaart-data-foundation`
+work is in `main`). The **museum-nl** source is implemented end-to-end on branch `museum-nl-source`
+(6 impl + 2 fix commits, full suite 117 green, ruff/mypy clean, opus whole-branch review = go);
+**not yet merged to `main`**. Both legal gates above passed 2026-06-20.
+
+### Go-live checklist (remaining before a public deploy)
+
+Everything below is operational/decision work — no code blockers remain.
+
+1. **Merge `museum-nl-source` → `main`** — only required if museum.nl ships in the first release.
+2. **⚠️ Decide how codespace-only data reaches production.** `deploy-pages.yml` runs the pipeline
+   with `--only-runtime github-action` and **no `--prebuilt`**, so `museum-nl` and
+   `restaurants-agent` are skipped in any automated deploy (they cannot fetch in CI). Choose:
+   (a) first release without codespace-only sources, or (b) generate their NDJSON in codespace and
+   adjust `deploy-pages.yml` to feed it via `--prebuilt <id>=<path>`. This is the only open
+   architecture decision. See `docs/RUNBOOK.md` for the codespace run commands.
+3. **museum.nl specifics (if it ships):** confirm the real permission/terms URL for `license_url`
+   (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
+   `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
+4. **Confirm the pipeline against real (not fixture) source data** — run `data-refresh.yml`
+   (workflow_dispatch) once; inspect per-category POI counts, `license.json`, and attribution.
+5. **Verify required attribution renders on the real build** (spec §10): "© OpenStreetMap
+   contributors" + ODbL share-alike, CC-BY sources (from `license.json`), "© Museumvereniging /
+   museum.nl".
+6. **GitHub Pages settings:** Pages source = GitHub Actions; custom domain if wanted; Pages enabled.
+7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). Never trigger
+   a public deploy autonomously.
