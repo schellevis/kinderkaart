@@ -1,0 +1,17 @@
+schema_version: 1
+id: museum-nl
+name: Museum.nl
+country: nl
+endpoint: "https://www.museum.nl/sitemap.xml"
+license: "Permission (museum.nl)"
+license_url: "https://www.museum.nl/nl/over-ons"
+license_evidence_date: "2026-06-20"
+republication_terms: "Used with written permission from Museumvereniging/museum.nl; not openly licensed."
+attribution: "© Museumvereniging / museum.nl"
+runtime: codespace-only
+update_frequency: manual
+expected_count: [300, 500]
+contact_policy: "User-Agent with contact; honor 429/Retry-After"
+category_map:
+  "museum": [museum]
+entrypoint: adapter.py
