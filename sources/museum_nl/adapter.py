@@ -1,19 +1,22 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import time
 from collections.abc import Iterator
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import BinaryIO
 
 import httpx
 
-from data_pipeline.adapter_base import SnapshotMetadata, run_cli
+from data_pipeline.adapter_base import SnapshotMetadata, http_get, run_cli
 from data_pipeline.manifest import load_manifest
 from data_pipeline.schema import Address, SourcePOI
 from sources.museum_nl.parse import (
     extract_meta_description,
     extract_museum_jsonld,
+    extract_slugs,
     normalize_website,
     split_street,
 )
@@ -24,7 +27,29 @@ CATEGORIES = sorted({c for cats in MANIFEST.category_map.values() for c in cats}
 
 
 def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
-    raise NotImplementedError
+    fetched = datetime.now(timezone.utc)
+    sitemap = http_get(MANIFEST.endpoint or "", client=client, sleep=time.sleep).text
+    digest = hashlib.sha256()
+    for slug in extract_slugs(sitemap):
+        url = f"https://www.museum.nl/nl/{slug}"
+        try:
+            html = http_get(url, client=client, sleep=time.sleep).text
+        except (httpx.HTTPError, RuntimeError):
+            continue
+        line = json.dumps(
+            {"slug": slug, "url": url, "html": html}, sort_keys=True
+        ) + "\n"
+        data = line.encode("utf-8")
+        output.write(data)
+        digest.update(data)
+    return SnapshotMetadata(
+        source_id=MANIFEST.id,
+        endpoint=MANIFEST.endpoint or "",
+        query=None,
+        checksum=digest.hexdigest(),
+        fetched_at=fetched,
+        adapter_version=ADAPTER_VERSION,
+    )
 
 
 def _to_poi(slug: str, html: str, fetched_at: datetime) -> SourcePOI | None:
