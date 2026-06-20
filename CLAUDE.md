@@ -52,7 +52,8 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
 - `web/` — the front-end (`src/lib/*` pure logic with vitest; `src/map.ts`/`ui/*` MapLibre shell;
   `tests/e2e` Playwright). `web/public/data/` holds a small sample build for dev/e2e.
 - `.github/workflows/` — `data-refresh.yml` (weekly cron + dispatch) and `deploy-pages.yml`
-  (**`workflow_dispatch` only, legal-gated**). `docs/RUNBOOK.md` covers codespace-only sources.
+  (**`workflow_dispatch` only**; legal gates passed 2026-06-20, but keep it manual). `docs/RUNBOOK.md`
+  covers codespace-only sources.
 - `tests/` — Python tests + `tests/fixtures/`.
 
 ## How to run
@@ -105,15 +106,21 @@ Web (Node available; run from `web/`):
 
 - Published data layer is **ODbL** (share-alike) + visible "© OpenStreetMap contributors";
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
-- **Two go/no-go gates before broad public publication** (spec §11): (1) external legal review of the
-  combined ODbL + CC-BY database; (2) **museum.nl** stays out of public artifacts until written
-  permission (it has no open-reuse licence; no `sources/museum_nl/` module exists yet).
-- `deploy-pages.yml` is therefore manual-only. Do NOT trigger a public deploy autonomously.
+- **Two go/no-go gates before broad public publication** (spec §11) — **both PASSED 2026-06-20:**
+  (1) external legal review of the combined ODbL + CC-BY database = **go**; (2) **museum.nl** written
+  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module is
+  specced + planned — see `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
+  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`; implementation pending). The
+  attribution/share-alike obligations above still stand.
+- `deploy-pages.yml` remains `workflow_dispatch`-only. The legal block is lifted, but still do NOT
+  trigger a public deploy autonomously — it is outward-facing and hard to reverse; require an
+  explicit human go-ahead.
 - `restaurants-agent` is `codespace-only`, agent-curated, requires ≥1 **direct** kid-friendliness
   signal per record (evidence is auditable); excluded from CI.
 
 ## Status
 
 All 7 plans + both spikes are implemented, tested, reviewed, and merge-ready on branch
-`kinderkaart-data-foundation`. Remaining before a live public deploy (intentionally deferred):
-the two legal gates above, and confirming the pipeline against real (not fixture) source data.
+`kinderkaart-data-foundation`. Both legal gates above passed 2026-06-20. Remaining before a live
+public deploy: confirming the pipeline against real (not fixture) source data, and an explicit
+human go-ahead to run `deploy-pages.yml`.

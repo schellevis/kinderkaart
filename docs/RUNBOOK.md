@@ -10,7 +10,7 @@ These sources require interactive credentials or a paid API key and are **not ru
 
 | Source | Why codespace-only |
 |---|---|
-| museum.nl | Written permission not yet secured (spec §11 legal gate) |
+| museum.nl | Scrape source; runs codespace-only (no live fetch in CI). Permission secured 2026-06-20 |
 | Agent restaurants | Requires a paid/authenticated API key; curated NDJSON workflow |
 
 ### Running a codespace-only source manually
@@ -46,23 +46,27 @@ These sources require interactive credentials or a paid API key and are **not ru
 
 ---
 
-## Legal release gate for museum.nl
+## Legal release gate for museum.nl — PASSED 2026-06-20
 
-museum.nl has **no source module yet** (deliberately not built — RCE + Wikidata already cover
-museums under open licences). Before any museum.nl data could be published:
+Both spec §11 gates are cleared: (1) the ODbL combined-DB legal review is **go**, and (2) **written
+permission from museum.nl is secured**. museum.nl data may now appear in public artifacts.
 
-1. Obtain written permission from museum.nl to redistribute their POI data under the project's combined-DB license terms.
-2. Add a `sources/museum_nl/` module (manifest + adapter, same contract as the others). Start it `runtime: codespace-only`; flip to `github-action` only once permission + evidence date are recorded.
-3. Satisfy the ODbL combined-DB review for the full dataset (spec §11).
-4. Only then trigger `deploy-pages.yml` (see below).
+Remaining work to actually publish museum.nl data:
+
+1. Build the `sources/museum_nl/` module (manifest + adapter, same contract as the others),
+   `runtime: codespace-only`, with the permission + `license_evidence_date` recorded in the manifest.
+2. Curate/normalize its output and include it via `--prebuilt` (codespace-only, as above).
+3. Trigger `deploy-pages.yml` (see below) — manual, with an explicit human go-ahead.
 
 ---
 
-## Triggering the Pages deploy (after legal go/no-go)
+## Triggering the Pages deploy
 
-`deploy-pages.yml` is **manual only** — it has no push or schedule trigger. Do not trigger it until both legal conditions in the workflow's `# LEGAL GATE` comment are satisfied.
+`deploy-pages.yml` is **manual only** — it has no push or schedule trigger. The legal gates are
+passed (2026-06-20), but the deploy is a public, hard-to-reverse action: launch it only on an
+explicit human decision, never autonomously.
 
-Once the legal go/no-go is confirmed:
+To deploy:
 
 1. Go to **Actions → Deploy to GitHub Pages → Run workflow** in the GitHub UI (or use the CLI):
 

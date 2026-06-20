@@ -412,6 +412,12 @@ shard-/lookupcontract, hosting).
 
 ## 11. Licentie & juridisch (conservatief, uitvoerbaar)
 
+> **Status 2026-06-20 — beide gates GEPASSEERD.** (1) De externe juridische toets van de
+> gecombineerde ODbL + CC-BY-database is **go**. (2) Schriftelijke toestemming voor museum.nl is
+> **binnen**; museum.nl mag nu in publieke artefacten en een `sources/museum_nl/`-module wordt
+> gebouwd. De onderstaande attributie-/share-alike-verplichtingen blijven gelden. De publieke deploy
+> (`deploy-pages.yml`) blijft `workflow_dispatch`-only en vereist een expliciete menselijke go-ahead.
+
 - **Per bron in het manifest:** licentie, licentie-URL, vereiste creditline, bewijsdatum,
   herpublicatievoorwaarden. De build genereert hieruit een **machineleesbaar
   licentierapport** + de zichtbare UI-attributie.

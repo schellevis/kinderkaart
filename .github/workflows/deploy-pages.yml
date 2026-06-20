@@ -1,7 +1,9 @@
-# LEGAL GATE: Do NOT trigger this workflow until BOTH conditions are satisfied (spec §11):
-#   1. ODbL combined-DB legal review is "go" (OSM data combined with CC-BY sources reviewed).
-#   2. museum.nl data is either absent from the build OR written permission from museum.nl is secured.
-# This workflow is workflow_dispatch ONLY — no push or schedule triggers.
+# LEGAL GATES (spec §11): BOTH PASSED 2026-06-20.
+#   1. ODbL combined-DB legal review = "go".
+#   2. museum.nl written permission = secured.
+# The legal block is lifted. This workflow stays workflow_dispatch ONLY — no push or schedule
+# triggers — and must be launched by an explicit human decision (it is a public, hard-to-reverse
+# deploy). Do NOT trigger it autonomously.
 
 name: Deploy to GitHub Pages
 
