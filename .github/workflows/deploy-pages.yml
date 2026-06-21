@@ -52,6 +52,9 @@ jobs:
           mkdir -p public_site/data
           cp -r _data/. public_site/data/
           rm -rf public_site/data/.git
+          # The identity registry is an internal build artifact (~6 MB) the client never reads —
+          # it stays on the data branch for refresh continuity but is not shipped to visitors.
+          rm -f public_site/data/nl/identity.json
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
