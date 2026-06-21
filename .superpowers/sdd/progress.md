@@ -69,3 +69,28 @@ Plan 6: complete (commits db68657..10aa1e3, 92 tests). Orchestrator smoke passes
 Plan 7: complete (commits 21f65b0..500b7e5, 94 tests). Evidence gate (>=1 direct signal), codespace-only (excluded from CI), tags->detail. Example curated data only; real curation is manual.
 
 ALL 7 PLANS + 2 SPIKES COMPLETE.
+
+## Plan 8 — museum.nl source (docs/superpowers/plans/2026-06-20-museum-nl-source.md)
+Branch: museum-nl-source
+Base (branch start): main @ 985e69e
+- [x] Task 1: package scaffold + manifest (commit 3814e46, review clean)
+- [x] Task 2: pure parsing helpers (commits b298b2a, 17dceee; review clean after 1 fix round — order-independent meta + hyphenated housenumbers)
+- [x] Task 3: normalize() (commit 7e92b69, review clean). MINOR deferred to final: rec["slug"/"html"] KeyError on malformed NDJSON (defensible); envelope url field unused (deliberate per plan)
+- [x] Task 4: snapshot() (commit 79aa095, review clean). MINOR deferred: sitemap fetch unguarded (acceptable — run cannot proceed without sitemap)
+- [x] Task 5: docs (commit af47eec, CLAUDE==AGENTS identical verified)
+
+Plan 8: COMPLETE (commits 3814e46..157f3aa, 6 impl + 2 fix). Full suite 117 green, ruff/mypy clean.
+Final whole-branch review (opus): no Critical/Important; "effectively Yes" to merge.
+DECISIONS (controller judgment, user delegated edge cases):
+- Task 2: hardened parse.py beyond plan's literal code — order-independent meta-description
+  parsing + hyphenated housenumber suffixes (real museum.nl HTML robustness). Tested.
+- Final review minor: coerced Address.postcode/city to str() like streetAddress (commit 157f3aa).
+- LEFT per house style (reviewer-endorsed): rec["slug"/"html"] KeyError on malformed NDJSON
+  (matches wikidata/restaurants adapters); sitemap fetch unguarded (fail loud — nothing to
+  enumerate); envelope url field unused (kept as audit artifact).
+OPEN / DOUBT CASES for human (do NOT block):
+- license_url points at /nl/over-ons (valid http(s), passes guard); spec said "confirm exact
+  terms URL when implementing" — confirm the real permission/terms page with museum.nl.
+- Pre-publish: run snapshot against LIVE museum.nl once, eyeball envelope, confirm
+  expected_count [300,500] holds and /nl/<slug> sitemap carries detail pages. (CLAUDE.md
+  already requires real-data confirmation + explicit human go-ahead before deploy.)

@@ -52,25 +52,54 @@ These sources require interactive credentials or a paid API key and are **not ru
 
 ---
 
-## Legal release gate for museum.nl — PASSED 2026-06-20
+## Committed-NDJSON route for codespace-only data (DECIDED 2026-06-21)
 
-Both spec §11 gates are cleared: (1) the ODbL combined-DB legal review is **go**, and (2) **written
-permission from museum.nl is secured**. museum.nl data may now appear in public artifacts.
+`deploy-pages.yml` runs the pipeline **in GitHub Actions**, which skips `codespace-only` sources
+(they can't fetch in CI). The chosen route to publish their data: **generate the NDJSON in a
+codespace and commit it into the repo**, so the CI deploy can read it via `--prebuilt`.
 
-Remaining work to actually publish museum.nl data:
+Procedure, per codespace-only source `<id>` (`museum-nl`, `restaurants-agent`):
 
-1. The `sources/museum_nl/` module is **built** (`codespace-only`, implemented and tested). Run it in
-   a Codespace to produce normalized NDJSON (see "Running a codespace-only source manually" above).
-2. Include its output via `--prebuilt museum-nl=/tmp/museum_nl.ndjson` (codespace-only, as above).
+1. Generate the normalized NDJSON in a codespace (see sections above for the per-source commands).
+2. Commit it under a stable path:
+
+   ```bash
+   mkdir -p data/prebuilt
+   cp /tmp/<id>.ndjson data/prebuilt/<id>.ndjson
+   git add data/prebuilt/<id>.ndjson
+   git commit -m "data(<id>): refresh committed prebuilt snapshot"
+   ```
+
+3. Add a `--prebuilt` flag to the deploy pipeline step in `.github/workflows/deploy-pages.yml`:
+
+   ```yaml
+   --prebuilt <id>=data/prebuilt/<id>.ndjson \
+   ```
+
+   For `museum-nl` the source package must also be on `main` (merge `museum-nl-source` first), and
+   its `license_url` confirmed.
+
+> ⚠️ Do **not** wire the `--prebuilt` flag into `deploy-pages.yml` before the committed NDJSON
+> exists — the pipeline copies the file eagerly and the deploy fails on a missing path.
+
+---
+
+## Publishing museum.nl data
+
+`museum-nl` is `codespace-only` (not openly licensed; attribute "© Museumvereniging / museum.nl").
+To publish it:
+
+1. The `sources/museum_nl/` module is **built** (implemented and tested). Run it in a Codespace to
+   produce normalized NDJSON (see "Running a codespace-only source manually" above).
+2. Include its output via the committed-NDJSON route (`--prebuilt museum-nl=data/prebuilt/museum_nl.ndjson`).
 3. Trigger `deploy-pages.yml` (see below) — manual, with an explicit human go-ahead.
 
 ---
 
 ## Triggering the Pages deploy
 
-`deploy-pages.yml` is **manual only** — it has no push or schedule trigger. The legal gates are
-passed (2026-06-20), but the deploy is a public, hard-to-reverse action: launch it only on an
-explicit human decision, never autonomously.
+`deploy-pages.yml` is **manual only** — it has no push or schedule trigger. The deploy is a public,
+hard-to-reverse action: launch it only on an explicit human decision, never autonomously.
 
 To deploy:
 

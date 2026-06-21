@@ -10,11 +10,9 @@ Netherlands (playgrounds, museums, zoos/petting zoos, pools, play parks, kid-fri
 restaurants), with search + filtering. Netherlands first; architecture is multi-country-ready.
 Everything runs from **GitHub Pages** — no server, no Vercel.
 
-Authoritative design + decisions live in `docs/superpowers/specs/` (start with
-`2026-06-19-kinderkaart-design.md` and `…-spike-outcomes.md`); per-area build plans are in
-`docs/superpowers/plans/`.
+Operational procedures (codespace-only sources, deploy, rollback) live in `docs/RUNBOOK.md`.
 
-## Architecture (resolved by measurement — see spike-outcomes)
+## Architecture (resolved by measurement)
 
 ```
 sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
@@ -34,7 +32,7 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
 - **No PMTiles, no Vercel, no GitHub Releases.** At NL scale (~40–60k POIs) the whole point set is
   ~0.5 MB gz; loading it fully and clustering client-side over the filtered set makes cluster
   counts correct under any filter combination. Measured: search query ~4 ms, getClusters
-  ~0.1 ms, total payload ~1 MB. (`…-spike-outcomes.md`.)
+  ~0.1 ms, total payload ~1 MB.
 
 ## Repo layout
 
@@ -52,7 +50,7 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
 - `web/` — the front-end (`src/lib/*` pure logic with vitest; `src/map.ts`/`ui/*` MapLibre shell;
   `tests/e2e` Playwright). `web/public/data/` holds a small sample build for dev/e2e.
 - `.github/workflows/` — `data-refresh.yml` (weekly cron + dispatch) and `deploy-pages.yml`
-  (**`workflow_dispatch` only**; legal gates passed 2026-06-20, but keep it manual). `docs/RUNBOOK.md`
+  (**`workflow_dispatch` only**; manual). `docs/RUNBOOK.md`
   covers codespace-only sources.
 - `tests/` — Python tests + `tests/fixtures/`.
 
@@ -102,20 +100,14 @@ Web (Node available; run from `web/`):
 - **Deterministic builds:** sorted iteration, `sort_keys=True` JSON, artifacts sorted by `poi_id`.
 - **`extra="forbid"`** on all contract models.
 
-## Licensing & legal gates (do not bypass)
+## Licensing & attribution (do not bypass)
 
 - Published data layer is **ODbL** (share-alike) + visible "© OpenStreetMap contributors";
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
-- **Two go/no-go gates before broad public publication** (spec §11) — **both PASSED 2026-06-20:**
-  (1) external legal review of the combined ODbL + CC-BY database = **go**; (2) **museum.nl** written
-  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module
-  exists (`codespace-only`), implemented and tested — see
-  `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
-  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`). The
-  attribution/share-alike obligations above still stand.
-- `deploy-pages.yml` remains `workflow_dispatch`-only. The legal block is lifted, but still do NOT
-  trigger a public deploy autonomously — it is outward-facing and hard to reverse; require an
-  explicit human go-ahead.
+- `museum-nl` is **permission-based, not openly licensed** — `codespace-only`, attribute
+  "© Museumvereniging / museum.nl".
+- `deploy-pages.yml` is `workflow_dispatch`-only. Do NOT trigger a public deploy autonomously — it
+  is outward-facing and hard to reverse; require an explicit human go-ahead.
 - `restaurants-agent` is `codespace-only`, agent-curated, requires ≥1 **direct** kid-friendliness
   signal per record (evidence is auditable); excluded from CI.
 
@@ -124,27 +116,37 @@ Web (Node available; run from `web/`):
 All 7 plans + both spikes are implemented, tested, and reviewed (the `kinderkaart-data-foundation`
 work is in `main`). The **museum-nl** source is implemented end-to-end on branch `museum-nl-source`
 (6 impl + 2 fix commits, full suite 117 green, ruff/mypy clean, opus whole-branch review = go);
-**not yet merged to `main`**. Both legal gates above passed 2026-06-20.
+**not yet merged to `main`**.
 
 ### Go-live checklist (remaining before a public deploy)
 
 Everything below is operational/decision work — no code blockers remain.
 
-1. **Merge `museum-nl-source` → `main`** — only required if museum.nl ships in the first release.
-2. **⚠️ Decide how codespace-only data reaches production.** `deploy-pages.yml` runs the pipeline
-   with `--only-runtime github-action` and **no `--prebuilt`**, so `museum-nl` and
-   `restaurants-agent` are skipped in any automated deploy (they cannot fetch in CI). Choose:
-   (a) first release without codespace-only sources, or (b) generate their NDJSON in codespace and
-   adjust `deploy-pages.yml` to feed it via `--prebuilt <id>=<path>`. This is the only open
-   architecture decision. See `docs/RUNBOOK.md` for the codespace run commands.
+**DECIDED 2026-06-21:** v1 ships **only the 5 `github-action` sources** (osm, wikidata-museums,
+rce-musea, den-haag-speeltuinen, eindhoven-speeltuinen). Codespace-only sources (`museum-nl`,
+`restaurants-agent`) are deferred to a later release. So steps 1–3 below are **not** v1 blockers.
+
+1. **Merge `museum-nl-source` → `main`** — only required if museum.nl ships in a release.
+2. **Codespace-only data → production: route DECIDED 2026-06-21 = commit NDJSON in `data/prebuilt/`.**
+   `deploy-pages.yml` runs the pipeline in CI with the default `--only-runtime github-action`, so
+   `museum-nl` and `restaurants-agent` are skipped (they cannot fetch in CI). When a release ships
+   codespace-only data: generate the NDJSON in a codespace, commit it under `data/prebuilt/<id>.ndjson`,
+   and add `--prebuilt <id>=data/prebuilt/<id>.ndjson` to the deploy pipeline step. Do NOT wire the
+   `--prebuilt` flag in until the committed NDJSON exists, or the deploy fails on a missing file.
+   See `docs/RUNBOOK.md` ("Committed-NDJSON route for codespace-only data").
 3. **museum.nl specifics (if it ships):** confirm the real permission/terms URL for `license_url`
    (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
    `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
-4. **Confirm the pipeline against real (not fixture) source data** — run `data-refresh.yml`
-   (workflow_dispatch) once; inspect per-category POI counts, `license.json`, and attribution.
-5. **Verify required attribution renders on the real build** (spec §10): "© OpenStreetMap
-   contributors" + ODbL share-alike, CC-BY sources (from `license.json`), "© Museumvereniging /
-   museum.nl".
-6. **GitHub Pages settings:** Pages source = GitHub Actions; custom domain if wanted; Pages enabled.
+4. **Confirm the pipeline against real (not fixture) source data.** The Codespaces `GITHUB_TOKEN`
+   lacks `actions: write`, so `data-refresh.yml` cannot be dispatched from here — either run it from
+   the GitHub UI (Actions → Data Refresh → Run workflow), or run the live pipeline locally in the
+   codespace (`uv run python -m scripts.build_pipeline … --exclude ""`, the same github-action
+   sources the deploy runs). Inspect per-category POI counts, `license.json`, and attribution.
+5. **Verify required attribution renders on the real build:** "© OpenStreetMap
+   contributors" + ODbL share-alike, CC-BY sources (from `license.json`). ("© Museumvereniging /
+   museum.nl" only applies once museum.nl ships.)
+6. **GitHub Pages settings:** not configured yet (API returns 404). Set Pages source = GitHub
+   Actions; enable Pages; custom domain if wanted. (Repo is public, so Pages works on the free tier.)
 7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). Never trigger
-   a public deploy autonomously.
+   a public deploy autonomously. (The Codespaces token also can't dispatch it, so this gate holds
+   structurally — run it from the GitHub UI.)
