@@ -10,7 +10,7 @@ from typing import BinaryIO
 
 import httpx
 
-from data_pipeline.adapter_base import SnapshotMetadata, http_get, run_cli
+from data_pipeline.adapter_base import SleepFn, SnapshotMetadata, http_get, run_cli
 from data_pipeline.manifest import load_manifest
 from data_pipeline.schema import Address, SourcePOI
 from sources.museum_nl.parse import (
@@ -24,16 +24,20 @@ from sources.museum_nl.parse import (
 ADAPTER_VERSION = "1"
 MANIFEST = load_manifest(Path(__file__).with_name("manifest.yaml"))
 CATEGORIES = sorted({c for cats in MANIFEST.category_map.values() for c in cats})
+# Be polite to museum.nl: throttle detail-page fetches to ~1 request/second.
+REQUEST_INTERVAL_SECONDS = 1.0
 
 
-def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
+def snapshot(
+    output: BinaryIO, *, client: httpx.Client, sleep: SleepFn = time.sleep
+) -> SnapshotMetadata:
     fetched = datetime.now(timezone.utc)
-    sitemap = http_get(MANIFEST.endpoint or "", client=client, sleep=time.sleep).text
+    sitemap = http_get(MANIFEST.endpoint or "", client=client, sleep=sleep).text
     digest = hashlib.sha256()
     for slug in extract_slugs(sitemap):
         url = f"https://www.museum.nl/nl/{slug}"
         try:
-            html = http_get(url, client=client, sleep=time.sleep).text
+            html = http_get(url, client=client, sleep=sleep).text
         except (httpx.HTTPError, RuntimeError):
             continue
         line = json.dumps(
@@ -42,6 +46,7 @@ def snapshot(output: BinaryIO, *, client: httpx.Client) -> SnapshotMetadata:
         data = line.encode("utf-8")
         output.write(data)
         digest.update(data)
+        sleep(REQUEST_INTERVAL_SECONDS)
     return SnapshotMetadata(
         source_id=MANIFEST.id,
         endpoint=MANIFEST.endpoint or "",

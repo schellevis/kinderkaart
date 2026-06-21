@@ -26,7 +26,7 @@ def _handler(request: httpx.Request) -> httpx.Response:
 def test_snapshot_writes_envelope():
     client = httpx.Client(transport=httpx.MockTransport(_handler))
     buf = io.BytesIO()
-    meta = snapshot(buf, client=client)
+    meta = snapshot(buf, client=client, sleep=lambda _: None)
 
     assert meta.source_id == "museum-nl"
     assert len(meta.checksum) == 64  # sha256 hex
