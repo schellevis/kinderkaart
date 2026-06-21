@@ -54,6 +54,9 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
   the **`data` branch**; `deploy-pages.yml` (**`workflow_dispatch` only**) builds the web app +
   publishes the `data` branch — **no pipeline run**, so a web-only deploy takes ~2 min. First deploy
   requires `data-refresh` to have populated the `data` branch. `docs/RUNBOOK.md` covers ops.
+  **TODO (perf):** the OSM normalize in `data-refresh` is ~30–45 min — a per-object Python loop over
+  the full NL extract. Add an `osmium tags-filter` pre-pass in `sources/osm/` (reduce the pbf to
+  relevant tags in C++ first) to cut it to ~1–2 min before leaning on the weekly cron.
 - `tests/` — Python tests + `tests/fixtures/`.
 
 ## How to run
