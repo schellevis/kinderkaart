@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -9,7 +10,7 @@ from data_pipeline.build_detail import choose_shard_count
 from data_pipeline.build_manifest import build_license_report
 from data_pipeline.build_points import build_points
 from data_pipeline.manifest import load_manifest
-from data_pipeline.publish_gate import check
+from data_pipeline.publish_gate import partition
 from data_pipeline.schema import CanonicalPOI
 from data_pipeline.vocab import CATEGORIES
 
@@ -39,7 +40,19 @@ def build_site(canon_ndjson: Path, sources_dir: Path, out_dir: Path, country: st
                data_version: str, required_source_ids: set[str],
                enforce_expected_counts: bool = False) -> dict:
     canon = _load_canon(canon_ndjson)
-    errors = check(canon, required_source_ids)
+    total_in = len(canon)
+    gate = partition(canon, required_source_ids)
+    if gate.dropped:
+        print(
+            f"publish-gate: dropped {len(gate.dropped)}/{total_in} out-of-bounds POIs",
+            file=sys.stderr,
+        )
+        for poi_id, reason in gate.dropped[:20]:
+            print(f"  - {poi_id}: {reason}", file=sys.stderr)
+        if len(gate.dropped) > 20:
+            print(f"  … and {len(gate.dropped) - 20} more", file=sys.stderr)
+    canon = gate.kept
+    errors = list(gate.errors)
     manifest_paths = sorted(sources_dir.glob("*/manifest.yaml"))
     manifest_paths = [p for p in manifest_paths if p.parent.name != "_template"]
     loaded_manifests = [(load_manifest(path), path) for path in manifest_paths]
