@@ -2,6 +2,9 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
   root: ".",
+  // Relative base so the app works under a project-pages subpath (/kinderkaart/) AND at root
+  // (local dev/preview, custom domain). Absolute "/" 404s the assets on github.io/kinderkaart/.
+  base: "./",
   publicDir: "public",
   build: {
     outDir: "dist",
