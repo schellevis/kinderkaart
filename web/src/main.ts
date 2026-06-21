@@ -10,7 +10,7 @@ import { decodePoints } from "./lib/points.js";
 import type { PointsPayload } from "./lib/points.js";
 import { buildIndex } from "./lib/search.js";
 import { makeClusterer } from "./cluster.js";
-import { matches } from "./lib/filter.js";
+import { matches, haversineM } from "./lib/filter.js";
 import { detailUrl } from "./lib/shard.js";
 import { Favorites } from "./lib/favorites.js";
 import { StateStore, parseUrlState } from "./state.js";
@@ -268,6 +268,15 @@ function buildUI(
       listPoints = allPoints.filter((pt) =>
         matches(pt, state.filter, reference)
       );
+    }
+
+    // Browse (non-search) lists can be the full ~40k set; sort by distance to the reference so
+    // the capped list shows the nearest results first. Search keeps its relevance order (≤200).
+    if (!state.searchQuery) {
+      listPoints = listPoints
+        .map((pt) => ({ pt, d: haversineM(reference, { lat: pt.lat, lon: pt.lon }) }))
+        .sort((a, b) => a.d - b.d)
+        .map((x) => x.pt);
     }
 
     currentDisplayPoints = listPoints;

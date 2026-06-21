@@ -38,7 +38,12 @@ export interface ResultsOptions {
   points: Point[];
   selectedId: string | null;
   onSelect: (poiId: string) => void;
+  /** Max items to render into the DOM (rest is summarised). Guards against 30k+ nodes. */
+  max?: number;
 }
+
+/** Default cap on rendered result rows — the full set can be ~40k POIs. */
+export const DEFAULT_MAX_RESULTS = 200;
 
 export function renderResults(container: HTMLElement, opts: ResultsOptions): void {
   while (container.firstChild) container.removeChild(container.firstChild);
@@ -51,7 +56,8 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
     return;
   }
 
-  for (const pt of opts.points) {
+  const max = opts.max ?? DEFAULT_MAX_RESULTS;
+  for (const pt of opts.points.slice(0, max)) {
     const item = document.createElement("button");
     item.type = "button";
     item.className = "result-item";
@@ -97,5 +103,16 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
     });
 
     container.appendChild(item);
+  }
+
+  if (opts.points.length > max) {
+    const more = document.createElement("p");
+    more.className = "results-truncated";
+    more.style.cssText =
+      "padding:0.75rem 1rem; color: var(--color-ink-subtle); font-size: 0.8125rem;";
+    more.textContent =
+      `Eerste ${max} van ${opts.points.length} getoond — zoom in op de kaart, ` +
+      `zoek of filter om te verfijnen.`;
+    container.appendChild(more);
   }
 }
