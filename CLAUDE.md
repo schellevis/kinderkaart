@@ -45,8 +45,8 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
   `build_detail.py`, `publish_gate.py`, `build_manifest.py`, `build.py` (CLI).
 - `sources/<id>/` — one folder per data source: `manifest.yaml` + `adapter.py`. `_template/` is the
   copyable starting point. Implemented: `osm`, `wikidata_museums`, `rce_musea`,
-  `den_haag_speeltuinen`, `eindhoven_speeltuinen` (all `github-action`); `restaurants_agent`
-  (`codespace-only`). `sources/manifest.schema.json` is the exported manifest JSON schema.
+  `den_haag_speeltuinen`, `eindhoven_speeltuinen` (all `github-action`); `restaurants_agent`,
+  `museum_nl` (both `codespace-only`). `sources/manifest.schema.json` is the exported manifest JSON schema.
 - `scripts/build_pipeline.py` — orchestrator: snapshot+normalize all included sources → merge →
   build. `--smoke` uses fixtures (no live fetch / no OSM download).
 - `web/` — the front-end (`src/lib/*` pure logic with vitest; `src/map.ts`/`ui/*` MapLibre shell;
@@ -108,9 +108,10 @@ Web (Node available; run from `web/`):
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
 - **Two go/no-go gates before broad public publication** (spec §11) — **both PASSED 2026-06-20:**
   (1) external legal review of the combined ODbL + CC-BY database = **go**; (2) **museum.nl** written
-  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module is
-  specced + planned — see `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
-  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`; implementation pending). The
+  permission = **secured** (it may now appear in public artifacts; a `sources/museum_nl/` module
+  exists (`codespace-only`), implemented and tested — see
+  `docs/superpowers/specs/2026-06-20-museum-nl-source-design.md` and
+  `docs/superpowers/plans/2026-06-20-museum-nl-source.md`). The
   attribution/share-alike obligations above still stand.
 - `deploy-pages.yml` remains `workflow_dispatch`-only. The legal block is lifted, but still do NOT
   trigger a public deploy autonomously — it is outward-facing and hard to reverse; require an
@@ -120,7 +121,30 @@ Web (Node available; run from `web/`):
 
 ## Status
 
-All 7 plans + both spikes are implemented, tested, reviewed, and merge-ready on branch
-`kinderkaart-data-foundation`. Both legal gates above passed 2026-06-20. Remaining before a live
-public deploy: confirming the pipeline against real (not fixture) source data, and an explicit
-human go-ahead to run `deploy-pages.yml`.
+All 7 plans + both spikes are implemented, tested, and reviewed (the `kinderkaart-data-foundation`
+work is in `main`). The **museum-nl** source is implemented end-to-end on branch `museum-nl-source`
+(6 impl + 2 fix commits, full suite 117 green, ruff/mypy clean, opus whole-branch review = go);
+**not yet merged to `main`**. Both legal gates above passed 2026-06-20.
+
+### Go-live checklist (remaining before a public deploy)
+
+Everything below is operational/decision work — no code blockers remain.
+
+1. **Merge `museum-nl-source` → `main`** — only required if museum.nl ships in the first release.
+2. **⚠️ Decide how codespace-only data reaches production.** `deploy-pages.yml` runs the pipeline
+   with `--only-runtime github-action` and **no `--prebuilt`**, so `museum-nl` and
+   `restaurants-agent` are skipped in any automated deploy (they cannot fetch in CI). Choose:
+   (a) first release without codespace-only sources, or (b) generate their NDJSON in codespace and
+   adjust `deploy-pages.yml` to feed it via `--prebuilt <id>=<path>`. This is the only open
+   architecture decision. See `docs/RUNBOOK.md` for the codespace run commands.
+3. **museum.nl specifics (if it ships):** confirm the real permission/terms URL for `license_url`
+   (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
+   `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
+4. **Confirm the pipeline against real (not fixture) source data** — run `data-refresh.yml`
+   (workflow_dispatch) once; inspect per-category POI counts, `license.json`, and attribution.
+5. **Verify required attribution renders on the real build** (spec §10): "© OpenStreetMap
+   contributors" + ODbL share-alike, CC-BY sources (from `license.json`), "© Museumvereniging /
+   museum.nl".
+6. **GitHub Pages settings:** Pages source = GitHub Actions; custom domain if wanted; Pages enabled.
+7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). Never trigger
+   a public deploy autonomously.

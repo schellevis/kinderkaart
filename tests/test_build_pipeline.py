@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from scripts.build_pipeline import run
+from scripts.build_pipeline import _raw_snapshot_path, run
 from sources.restaurants_agent.adapter import normalize as normalize_restaurants
 
 
@@ -33,3 +33,17 @@ def test_prebuilt_codespace_source_is_added_to_normal_pipeline(tmp_path):
         smoke=True,
     )
     assert manifest["nl"]["counts"]["restaurant_kidfriendly"] == 1
+
+
+def test_raw_snapshot_path_preserves_endpoint_suffixes(tmp_path):
+    assert _raw_snapshot_path(
+        tmp_path,
+        "osm",
+        "https://download.geofabrik.de/europe/netherlands-latest.osm.pbf",
+    ) == tmp_path / "osm.raw.osm.pbf"
+    assert _raw_snapshot_path(
+        tmp_path,
+        "eindhoven-speeltuinen",
+        "https://example.test/data.json",
+    ) == tmp_path / "eindhoven-speeltuinen.raw.json"
+    assert _raw_snapshot_path(tmp_path, "museum-nl", None) == tmp_path / "museum-nl.raw"
