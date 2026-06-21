@@ -1,5 +1,9 @@
 # This workflow is workflow_dispatch ONLY — no push or schedule triggers — and must be launched by
 # an explicit human decision (it is a public, hard-to-reverse deploy). Do NOT trigger it autonomously.
+#
+# It publishes the web app + the pre-built data from the `data` branch. It does NOT run the data
+# pipeline (no OSM download/parse), so a web-only change deploys in ~2 min. Run "Data Refresh" first
+# to (re)build the data layer onto the `data` branch — the first deploy requires that branch to exist.
 
 name: Deploy to GitHub Pages
 
@@ -9,42 +13,29 @@ on:
 permissions:
   pages: write
   id-token: write
-  contents: write
+  contents: read
 
 concurrency:
-  group: identity-registry
+  group: pages-deploy
   cancel-in-progress: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code (main)
         uses: actions/checkout@v4
 
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v5
+      - name: Checkout pre-built data (data branch)
+        uses: actions/checkout@v4
+        with:
+          ref: data
+          path: _data
 
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-
-      - name: Install Python dependencies
-        run: uv sync
-
-      - name: Compute data version
-        run: echo "DATA_VERSION=$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
-
-      - name: Run pipeline (live) to produce site/data
-        run: |
-          uv run python -m scripts.build_pipeline \
-            --sources sources \
-            --work /tmp/work \
-            --out site \
-            --country nl \
-            --data-version "$DATA_VERSION" \
-            --exclude ""
 
       - name: Build web app
         run: |
@@ -56,7 +47,11 @@ jobs:
         run: |
           mkdir -p public_site
           cp -r web/dist/. public_site/
-          cp -r site/data public_site/data
+          # Overlay the real data layer, replacing any sample data bundled by the web build.
+          rm -rf public_site/data
+          mkdir -p public_site/data
+          cp -r _data/. public_site/data/
+          rm -rf public_site/data/.git
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -66,12 +61,6 @@ jobs:
         with:
           path: public_site
 
-      - name: Preserve identity registry for post-deploy commit
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-identity
-          path: site/data/nl/identity.json
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -79,23 +68,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Download deployed identity registry
-        uses: actions/download-artifact@v4
-        with:
-          name: deploy-identity
-          path: site/data/nl
-
-      - name: Commit deployed identity registry
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add site/data/nl/identity.json
-          git diff --quiet --cached || git commit -m "chore: persist deployed identity registry [skip ci]"
-          git push

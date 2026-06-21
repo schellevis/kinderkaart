@@ -54,9 +54,9 @@ These sources require interactive credentials or a paid API key and are **not ru
 
 ## Committed-NDJSON route for codespace-only data (DECIDED 2026-06-21)
 
-`deploy-pages.yml` runs the pipeline **in GitHub Actions**, which skips `codespace-only` sources
-(they can't fetch in CI). The chosen route to publish their data: **generate the NDJSON in a
-codespace and commit it into the repo**, so the CI deploy can read it via `--prebuilt`.
+The pipeline runs in the `data-refresh` job, which skips `codespace-only` sources (they can't fetch
+in CI). The chosen route to publish their data: **generate the NDJSON in a codespace and commit it
+into the repo**, where the `data-refresh` job picks it up automatically.
 
 Procedure, per codespace-only source `<id>` (`museum-nl`, `restaurants-agent`):
 
@@ -65,22 +65,17 @@ Procedure, per codespace-only source `<id>` (`museum-nl`, `restaurants-agent`):
 
    ```bash
    mkdir -p data/prebuilt
-   cp /tmp/<id>.ndjson data/prebuilt/<id>.ndjson
+   cp /tmp/<id>.ndjson data/prebuilt/<id>.ndjson   # e.g. data/prebuilt/museum-nl.ndjson
    git add data/prebuilt/<id>.ndjson
    git commit -m "data(<id>): refresh committed prebuilt snapshot"
    ```
 
-3. Add a `--prebuilt` flag to the deploy pipeline step in `.github/workflows/deploy-pages.yml`:
+3. Nothing else to wire. `data-refresh.yml` **auto-includes every `data/prebuilt/*.ndjson`** via
+   `--prebuilt` (the file basename maps to the source id; `_` and `-` both work). Run a data
+   refresh to fold it into the published data layer.
 
-   ```yaml
-   --prebuilt <id>=data/prebuilt/<id>.ndjson \
-   ```
-
-   For `museum-nl` the source package must also be on `main` (merge `museum-nl-source` first), and
-   its `license_url` confirmed.
-
-> ⚠️ Do **not** wire the `--prebuilt` flag into `deploy-pages.yml` before the committed NDJSON
-> exists — the pipeline copies the file eagerly and the deploy fails on a missing path.
+   For `museum-nl` the source package must also be on `main` (done — merge `0571ad3`) and its
+   `license_url` confirmed.
 
 ---
 
@@ -91,14 +86,30 @@ To publish it:
 
 1. The `sources/museum_nl/` module is **built** (implemented and tested). Run it in a Codespace to
    produce normalized NDJSON (see "Running a codespace-only source manually" above).
-2. Include its output via the committed-NDJSON route (`--prebuilt museum-nl=data/prebuilt/museum_nl.ndjson`).
-3. Trigger `deploy-pages.yml` (see below) — manual, with an explicit human go-ahead.
+2. Commit its output as `data/prebuilt/museum-nl.ndjson` (committed-NDJSON route above) — the
+   `data-refresh` job auto-includes it.
+3. Run `data-refresh` (rebuilds the `data` branch), then trigger `deploy-pages.yml` (see below) —
+   manual, with an explicit human go-ahead.
 
 ---
 
+## Data refresh vs. deploy (decoupled)
+
+The two workflows are **decoupled** so web changes don't trigger the slow OSM build:
+
+- **`data-refresh.yml`** (weekly cron + `workflow_dispatch`) runs the pipeline (OSM download/parse,
+  ~30–45 min) and publishes the built artifacts to the **`data` branch**. It auto-includes any
+  committed `data/prebuilt/*.ndjson`. The identity registry lives on the `data` branch and is
+  restored at the start of each run for id stability.
+- **`deploy-pages.yml`** (`workflow_dispatch` only) builds the web app and publishes it together
+  with the `data` branch — **no pipeline run**, ~2 min. A web-only change deploys without rebuilding
+  data.
+
+> The **first deploy requires the `data` branch to exist** — run `data-refresh` at least once first.
+
 ## Triggering the Pages deploy
 
-`deploy-pages.yml` is **manual only** — it has no push or schedule trigger. The deploy is a public,
+`deploy-pages.yml` is **manual only** — no push or schedule trigger. The deploy is a public,
 hard-to-reverse action: launch it only on an explicit human decision, never autonomously.
 
 To deploy:
@@ -110,36 +121,35 @@ To deploy:
    ```
 
 2. The workflow will:
-   - Run the full live pipeline (all `github-action` sources including OSM).
+   - Check out the web code (`main`) + the pre-built data (`data` branch).
    - Build the web app (`npm ci && npm run build`).
-   - Assemble `public_site/` (web dist + data).
+   - Assemble `public_site/` (web dist + data branch contents).
    - Deploy to GitHub Pages.
 
 3. Verify the deployment URL shown in the workflow summary.
 
 ---
 
-## Rolling back a bad deploy
+## Rolling back
 
-### Roll back the identity registry commit
+### Roll back the data layer (incl. identity registry)
 
-If a data-refresh run committed a bad `identity.json`:
+The published data + `identity.json` live on the **`data` branch**. To revert to a prior good build:
 
 ```bash
-# Find the last-known-good commit for identity.json
-git log --oneline -- site/data/nl/identity.json
-
-# Revert to that commit's version
-git checkout <good-sha> -- site/data/nl/identity.json
-git commit -m "fix: revert identity registry to last-known-good"
-git push
+git fetch origin data
+git log --oneline origin/data            # pick the last-known-good <good-sha>
+git push origin <good-sha>:data --force-with-lease
 ```
+
+Then re-run `deploy-pages.yml` to publish the reverted data. (Alternatively just re-run
+`data-refresh` to rebuild from current sources.)
 
 ### Roll back a Pages deploy
 
 1. Identify the last good workflow run under **Actions → Deploy to GitHub Pages**.
-2. Re-run that workflow (the artifact from that run is used).
-   - Or revert the offending commit and dispatch a new deploy run.
+2. Re-run that workflow (its artifact is used).
+   - Or revert the offending commit / data-branch state and dispatch a new deploy run.
 
 ### Re-dispatch a data refresh
 
@@ -147,4 +157,5 @@ git push
 gh workflow run data-refresh.yml --ref main
 ```
 
-This respects the shared `concurrency: group: identity-registry` lock, so refresh and deploy runs queue rather than race the registry commit.
+`data-refresh` serializes on `concurrency: group: data-branch`; the deploy uses a separate
+`pages-deploy` group, so a deploy reads a consistent `data`-branch commit even if a refresh is mid-run.

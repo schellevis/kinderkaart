@@ -49,9 +49,11 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
   build. `--smoke` uses fixtures (no live fetch / no OSM download).
 - `web/` — the front-end (`src/lib/*` pure logic with vitest; `src/map.ts`/`ui/*` MapLibre shell;
   `tests/e2e` Playwright). `web/public/data/` holds a small sample build for dev/e2e.
-- `.github/workflows/` — `data-refresh.yml` (weekly cron + dispatch) and `deploy-pages.yml`
-  (**`workflow_dispatch` only**; manual). `docs/RUNBOOK.md`
-  covers codespace-only sources.
+- `.github/workflows/` — **decoupled** so web changes don't rebuild data: `data-refresh.yml`
+  (weekly cron + dispatch) runs the pipeline (the slow OSM build) and publishes built artifacts to
+  the **`data` branch**; `deploy-pages.yml` (**`workflow_dispatch` only**) builds the web app +
+  publishes the `data` branch — **no pipeline run**, so a web-only deploy takes ~2 min. First deploy
+  requires `data-refresh` to have populated the `data` branch. `docs/RUNBOOK.md` covers ops.
 - `tests/` — Python tests + `tests/fixtures/`.
 
 ## How to run
@@ -127,26 +129,26 @@ committed-NDJSON route below). Only `restaurants-agent` is deferred (it has no r
 yet). So steps 1–3 are now **v1 work**.
 
 1. ~~Merge `museum-nl-source` → `main`~~ — **done** (merge `0571ad3`).
-2. **Get `museum-nl` data into the CI deploy: route DECIDED 2026-06-21 = commit NDJSON in
-   `data/prebuilt/`.** `deploy-pages.yml` runs the pipeline in CI with the default
-   `--only-runtime github-action`, so `museum-nl` is skipped (it cannot fetch in CI). For v1:
-   generate the NDJSON in a codespace, commit it as `data/prebuilt/museum_nl.ndjson`, and add
-   `--prebuilt museum-nl=data/prebuilt/museum_nl.ndjson` to the deploy pipeline step. Do NOT wire the
-   `--prebuilt` flag in until the committed NDJSON exists, or the deploy fails on a missing file.
-   See `docs/RUNBOOK.md` ("Committed-NDJSON route for codespace-only data").
+2. **Get `museum-nl` data into the build: route DECIDED 2026-06-21 = commit NDJSON in
+   `data/prebuilt/`.** The pipeline skips codespace-only sources in CI (they can't fetch). For v1:
+   generate the NDJSON in a codespace and commit it as `data/prebuilt/museum-nl.ndjson` — the
+   `data-refresh` job **auto-includes every `data/prebuilt/*.ndjson`** via `--prebuilt`, so no
+   workflow edit is needed. See `docs/RUNBOOK.md` ("Committed-NDJSON route for codespace-only data").
 3. **museum.nl specifics (ships in v1):** confirm the real permission/terms URL for `license_url`
    (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
    `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
-4. **Confirm the pipeline against real (not fixture) source data.** The Codespaces `GITHUB_TOKEN`
-   lacks `actions: write`, so `data-refresh.yml` cannot be dispatched from here — either run it from
-   the GitHub UI (Actions → Data Refresh → Run workflow), or run the live pipeline locally in the
-   codespace (`uv run python -m scripts.build_pipeline … --exclude ""`, the same github-action
-   sources the deploy runs). Inspect per-category POI counts, `license.json`, and attribution.
+4. **Run `data-refresh` to build the data layer onto the `data` branch** (this also validates the
+   pipeline against real source data). The Codespaces `GITHUB_TOKEN` lacks `actions: write`, so it
+   cannot be dispatched from here — run it from the GitHub UI (Actions → Data Refresh → Run
+   workflow), or run the live pipeline locally (`uv run python -m scripts.build_pipeline … --exclude ""`).
+   Inspect per-category POI counts, `license.json`, and attribution. A `data` branch must exist
+   before the first deploy.
 5. **Verify required attribution renders on the real build:** "© OpenStreetMap
    contributors" + ODbL share-alike, CC-BY sources (from `license.json`), and "© Museumvereniging /
    museum.nl" (museum-nl ships in v1).
 6. **GitHub Pages settings:** not configured yet (API returns 404). Set Pages source = GitHub
    Actions; enable Pages; custom domain if wanted. (Repo is public, so Pages works on the free tier.)
-7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). Never trigger
-   a public deploy autonomously. (The Codespaces token also can't dispatch it, so this gate holds
-   structurally — run it from the GitHub UI.)
+7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). It publishes
+   the web app + the `data` branch (no pipeline run, ~2 min). Never trigger a public deploy
+   autonomously. (The Codespaces token also can't dispatch it, so this gate holds structurally — run
+   it from the GitHub UI.)

@@ -1,12 +1,17 @@
 name: Data Refresh
 
+# Builds the data layer (the slow part — OSM download + parse, ~30-45 min) and publishes the
+# built artifacts to the `data` branch. The Pages deploy consumes that branch, so a web-only
+# change can deploy without re-running this. Runs weekly + on demand.
+
 on:
   schedule:
     - cron: "0 3 * * 1"  # Every Monday at 03:00 UTC
   workflow_dispatch: {}
 
+# Serialize refreshes so two runs never race the data branch.
 concurrency:
-  group: identity-registry
+  group: data-branch
   cancel-in-progress: false
 
 permissions:
@@ -16,7 +21,7 @@ jobs:
   refresh:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code (main)
         uses: actions/checkout@v4
 
       - name: Set up uv
@@ -25,29 +30,56 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Restore prior data branch (identity-registry continuity)
+        run: |
+          mkdir -p site/data
+          if git ls-remote --exit-code --heads origin data >/dev/null 2>&1; then
+            git fetch origin data:data
+            git archive data | tar -x -C site/data
+            echo "restored prior data branch into site/data"
+          else
+            echo "no data branch yet — first run, identity registry will be minted"
+          fi
+
       - name: Compute data version
         run: echo "DATA_VERSION=$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - name: Run pipeline (live)
         run: |
+          # Auto-include any committed codespace-only NDJSON (e.g. data/prebuilt/museum-nl.ndjson).
+          # File basename -> source id (underscores or hyphens both map to the kebab-case id).
+          prebuilt=()
+          for f in data/prebuilt/*.ndjson; do
+            [ -e "$f" ] || continue
+            id="$(basename "$f" .ndjson | tr '_' '-')"
+            prebuilt+=(--prebuilt "$id=$f")
+            echo "including prebuilt source: $id ($f)"
+          done
           uv run python -m scripts.build_pipeline \
             --sources sources \
             --work /tmp/work \
             --out site \
             --country nl \
             --data-version "$DATA_VERSION" \
-            --exclude ""
+            --exclude "" \
+            "${prebuilt[@]}"
 
-      - name: Upload site artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: site-data
-          path: site/
-
-      - name: Commit updated identity registry
+      - name: Publish built data to the data branch
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add site/data/nl/identity.json
-          git diff --quiet --cached || git commit -m "chore: refresh identity registry [skip ci]"
-          git push
+          if git show-ref --verify --quiet refs/heads/data; then
+            git worktree add /tmp/databranch data
+          else
+            git worktree add --orphan -b data /tmp/databranch
+          fi
+          # Replace the branch contents with the fresh build (preserve only .git).
+          find /tmp/databranch -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -r site/data/. /tmp/databranch/
+          git -C /tmp/databranch add -A
+          if git -C /tmp/databranch diff --quiet --cached; then
+            echo "data unchanged — nothing to publish"
+          else
+            git -C /tmp/databranch commit -m "data: refresh $DATA_VERSION"
+            git -C /tmp/databranch push origin data
+          fi
