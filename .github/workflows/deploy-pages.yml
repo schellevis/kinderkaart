@@ -1,9 +1,5 @@
-# LEGAL GATES (spec §11): BOTH PASSED 2026-06-20.
-#   1. ODbL combined-DB legal review = "go".
-#   2. museum.nl written permission = secured.
-# The legal block is lifted. This workflow stays workflow_dispatch ONLY — no push or schedule
-# triggers — and must be launched by an explicit human decision (it is a public, hard-to-reverse
-# deploy). Do NOT trigger it autonomously.
+# This workflow is workflow_dispatch ONLY — no push or schedule triggers — and must be launched by
+# an explicit human decision (it is a public, hard-to-reverse deploy). Do NOT trigger it autonomously.
 
 name: Deploy to GitHub Pages
 
