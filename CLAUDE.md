@@ -114,27 +114,27 @@ Web (Node available; run from `web/`):
 ## Status
 
 All 7 plans + both spikes are implemented, tested, and reviewed (the `kinderkaart-data-foundation`
-work is in `main`). The **museum-nl** source is implemented end-to-end on branch `museum-nl-source`
-(6 impl + 2 fix commits, full suite 117 green, ruff/mypy clean, opus whole-branch review = go);
-**not yet merged to `main`**.
+work is in `main`). The **museum-nl** source is implemented end-to-end and **merged to `main`**
+(merge `0571ad3`; full suite green, ruff/mypy clean, opus whole-branch review = go).
 
 ### Go-live checklist (remaining before a public deploy)
 
 Everything below is operational/decision work — no code blockers remain.
 
-**DECIDED 2026-06-21:** v1 ships **only the 5 `github-action` sources** (osm, wikidata-museums,
-rce-musea, den-haag-speeltuinen, eindhoven-speeltuinen). Codespace-only sources (`museum-nl`,
-`restaurants-agent`) are deferred to a later release. So steps 1–3 below are **not** v1 blockers.
+**DECIDED 2026-06-21:** v1 ships the **5 `github-action` sources** (osm, wikidata-museums,
+rce-musea, den-haag-speeltuinen, eindhoven-speeltuinen) **+ `museum-nl`** (codespace-only, via the
+committed-NDJSON route below). Only `restaurants-agent` is deferred (it has no real curated data
+yet). So steps 1–3 are now **v1 work**.
 
-1. **Merge `museum-nl-source` → `main`** — only required if museum.nl ships in a release.
-2. **Codespace-only data → production: route DECIDED 2026-06-21 = commit NDJSON in `data/prebuilt/`.**
-   `deploy-pages.yml` runs the pipeline in CI with the default `--only-runtime github-action`, so
-   `museum-nl` and `restaurants-agent` are skipped (they cannot fetch in CI). When a release ships
-   codespace-only data: generate the NDJSON in a codespace, commit it under `data/prebuilt/<id>.ndjson`,
-   and add `--prebuilt <id>=data/prebuilt/<id>.ndjson` to the deploy pipeline step. Do NOT wire the
+1. ~~Merge `museum-nl-source` → `main`~~ — **done** (merge `0571ad3`).
+2. **Get `museum-nl` data into the CI deploy: route DECIDED 2026-06-21 = commit NDJSON in
+   `data/prebuilt/`.** `deploy-pages.yml` runs the pipeline in CI with the default
+   `--only-runtime github-action`, so `museum-nl` is skipped (it cannot fetch in CI). For v1:
+   generate the NDJSON in a codespace, commit it as `data/prebuilt/museum_nl.ndjson`, and add
+   `--prebuilt museum-nl=data/prebuilt/museum_nl.ndjson` to the deploy pipeline step. Do NOT wire the
    `--prebuilt` flag in until the committed NDJSON exists, or the deploy fails on a missing file.
    See `docs/RUNBOOK.md` ("Committed-NDJSON route for codespace-only data").
-3. **museum.nl specifics (if it ships):** confirm the real permission/terms URL for `license_url`
+3. **museum.nl specifics (ships in v1):** confirm the real permission/terms URL for `license_url`
    (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
    `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
 4. **Confirm the pipeline against real (not fixture) source data.** The Codespaces `GITHUB_TOKEN`
@@ -143,8 +143,8 @@ rce-musea, den-haag-speeltuinen, eindhoven-speeltuinen). Codespace-only sources 
    codespace (`uv run python -m scripts.build_pipeline … --exclude ""`, the same github-action
    sources the deploy runs). Inspect per-category POI counts, `license.json`, and attribution.
 5. **Verify required attribution renders on the real build:** "© OpenStreetMap
-   contributors" + ODbL share-alike, CC-BY sources (from `license.json`). ("© Museumvereniging /
-   museum.nl" only applies once museum.nl ships.)
+   contributors" + ODbL share-alike, CC-BY sources (from `license.json`), and "© Museumvereniging /
+   museum.nl" (museum-nl ships in v1).
 6. **GitHub Pages settings:** not configured yet (API returns 404). Set Pages source = GitHub
    Actions; enable Pages; custom domain if wanted. (Repo is public, so Pages works on the free tier.)
 7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). Never trigger
