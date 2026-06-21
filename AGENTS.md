@@ -51,8 +51,8 @@ sources/<id>/ (manifest.yaml + adapter)         Python pipeline (uv)
   `tests/e2e` Playwright). `web/public/data/` holds a small sample build for dev/e2e.
 - `.github/workflows/` — **decoupled** so web changes don't rebuild data: `data-refresh.yml`
   (weekly cron + dispatch) runs the pipeline (the slow OSM build) and publishes built artifacts to
-  the **`data` branch**; `deploy-pages.yml` (**`workflow_dispatch` only**) builds the web app +
-  publishes the `data` branch — **no pipeline run**, so a web-only deploy takes ~2 min. First deploy
+  the **`data` branch**; `deploy-pages.yml` (**push to `main` + manual dispatch**) builds the web app +
+  publishes the `data` branch — **no pipeline run**, so a deploy takes ~2 min. First deploy
   requires `data-refresh` to have populated the `data` branch. `docs/RUNBOOK.md` covers ops.
   **TODO (perf):** the OSM normalize in `data-refresh` is ~30–45 min — a per-object Python loop over
   the full NL extract. Add an `osmium tags-filter` pre-pass in `sources/osm/` (reduce the pbf to
@@ -110,8 +110,9 @@ Web (Node available; run from `web/`):
 - Published data layer is **ODbL** (share-alike) + visible "© OpenStreetMap contributors";
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
 - `museum-nl` — `codespace-only`, attribute "© Museumvereniging / museum.nl".
-- `deploy-pages.yml` is `workflow_dispatch`-only. Do NOT trigger a public deploy autonomously — it
-  is outward-facing and hard to reverse; require an explicit human go-ahead.
+- `deploy-pages.yml` auto-deploys on push to `main` (+ manual dispatch). It only republishes the web
+  app + the existing `data` branch (no data rebuild). Data changes go through `data-refresh` →
+  `data` branch and do NOT auto-deploy.
 - `restaurants-agent` is `codespace-only`, agent-curated, requires ≥1 **direct** kid-friendliness
   signal per record (evidence is auditable); excluded from CI.
 
@@ -147,9 +148,8 @@ yet). So steps 1–3 are now **v1 work**.
 5. **Verify required attribution renders on the real build:** "© OpenStreetMap
    contributors" + ODbL share-alike, CC-BY sources (from `license.json`), and "© Museumvereniging /
    museum.nl" (museum-nl ships in v1).
-6. **GitHub Pages settings:** not configured yet (API returns 404). Set Pages source = GitHub
-   Actions; enable Pages; custom domain if wanted. (Repo is public, so Pages works on the free tier.)
-7. **Explicit human go-ahead → run `deploy-pages.yml` manually** (workflow_dispatch). It publishes
-   the web app + the `data` branch (no pipeline run, ~2 min). Never trigger a public deploy
-   autonomously. (The Codespaces token also can't dispatch it, so this gate holds structurally — run
-   it from the GitHub UI.)
+6. **GitHub Pages:** live at https://schellevis.github.io/kinderkaart/ (source = GitHub Actions).
+   Because it's a project-pages subpath, the web build uses Vite `base: "./"` (relative asset paths).
+7. **Deploy:** `deploy-pages.yml` auto-deploys on push to `main` (+ manual dispatch); ~2 min, web +
+   `data` branch only. After a `data-refresh` (which updates the `data` branch, not `main`), dispatch
+   a deploy to publish the new data.

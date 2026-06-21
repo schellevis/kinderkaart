@@ -1,13 +1,15 @@
-# This workflow is workflow_dispatch ONLY — no push or schedule triggers — and must be launched by
-# an explicit human decision (it is a public, hard-to-reverse deploy). Do NOT trigger it autonomously.
+# Publishes the web app + the pre-built data from the `data` branch. It does NOT run the data
+# pipeline (no OSM download/parse), so a deploy takes ~2 min. Run "Data Refresh" to (re)build the
+# data layer onto the `data` branch — the first deploy requires that branch to exist.
 #
-# It publishes the web app + the pre-built data from the `data` branch. It does NOT run the data
-# pipeline (no OSM download/parse), so a web-only change deploys in ~2 min. Run "Data Refresh" first
-# to (re)build the data layer onto the `data` branch — the first deploy requires that branch to exist.
+# Triggers on every push to main (auto-deploy) and on manual dispatch. Data updates live on the
+# `data` branch (not main), so they don't auto-deploy — dispatch a deploy after a data refresh.
 
 name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch: {}
 
 permissions:

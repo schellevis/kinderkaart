@@ -101,18 +101,17 @@ The two workflows are **decoupled** so web changes don't trigger the slow OSM bu
   ~30–45 min) and publishes the built artifacts to the **`data` branch**. It auto-includes any
   committed `data/prebuilt/*.ndjson`. The identity registry lives on the `data` branch and is
   restored at the start of each run for id stability.
-- **`deploy-pages.yml`** (`workflow_dispatch` only) builds the web app and publishes it together
-  with the `data` branch — **no pipeline run**, ~2 min. A web-only change deploys without rebuilding
-  data.
+- **`deploy-pages.yml`** (auto on push to `main` + `workflow_dispatch`) builds the web app and
+  publishes it together with the `data` branch — **no pipeline run**, ~2 min. A push to `main`
+  deploys without rebuilding data. Data updates land on the `data` branch (not `main`), so they do
+  **not** auto-deploy — dispatch a deploy after a refresh.
 
 > The **first deploy requires the `data` branch to exist** — run `data-refresh` at least once first.
 
 ## Triggering the Pages deploy
 
-`deploy-pages.yml` is **manual only** — no push or schedule trigger. The deploy is a public,
-hard-to-reverse action: launch it only on an explicit human decision, never autonomously.
-
-To deploy:
+`deploy-pages.yml` auto-deploys on every push to `main`. To deploy current `main` without a code
+change, or to publish a fresh `data`-branch build, dispatch it manually:
 
 1. Go to **Actions → Deploy to GitHub Pages → Run workflow** in the GitHub UI (or use the CLI):
 
