@@ -109,8 +109,7 @@ Web (Node available; run from `web/`):
 
 - Published data layer is **ODbL** (share-alike) + visible "© OpenStreetMap contributors";
   CC-BY sources (PDOK, Den Haag, Eindhoven) get attribution from `license.json`; Wikidata/RCE are CC0.
-- `museum-nl` is **permission-based, not openly licensed** — `codespace-only`, attribute
-  "© Museumvereniging / museum.nl".
+- `museum-nl` — `codespace-only`, attribute "© Museumvereniging / museum.nl".
 - `deploy-pages.yml` is `workflow_dispatch`-only. Do NOT trigger a public deploy autonomously — it
   is outward-facing and hard to reverse; require an explicit human go-ahead.
 - `restaurants-agent` is `codespace-only`, agent-curated, requires ≥1 **direct** kid-friendliness
