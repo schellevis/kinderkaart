@@ -136,8 +136,7 @@ yet). So steps 1–3 are now **v1 work**.
    generate the NDJSON in a codespace and commit it as `data/prebuilt/museum-nl.ndjson` — the
    `data-refresh` job **auto-includes every `data/prebuilt/*.ndjson`** via `--prebuilt`, so no
    workflow edit is needed. See `docs/RUNBOOK.md` ("Committed-NDJSON route for codespace-only data").
-3. **museum.nl specifics (ships in v1):** confirm the real permission/terms URL for `license_url`
-   (currently `/nl/over-ons`); run `snapshot` once live and verify the envelope + that
+3. **museum.nl specifics (ships in v1):** run `snapshot` once live and verify the envelope + that
    `expected_count: [300, 500]` holds. (Tracked in memory `museum-nl-open-items`.)
 4. **Run `data-refresh` to build the data layer onto the `data` branch** (this also validates the
    pipeline against real source data). The Codespaces `GITHUB_TOKEN` lacks `actions: write`, so it
