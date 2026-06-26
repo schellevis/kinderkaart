@@ -16,6 +16,10 @@
     <div id="app">
       <!-- Desktop side panel -->
       <aside id="side-panel" role="complementary" aria-label="Zoeken en filteren">
+        <div class="brand-header" aria-hidden="true">
+          <span class="brand-name">Kinderkaart</span>
+          <span class="brand-tagline">Leuke uitjes met kinderen</span>
+        </div>
         <div id="panel-search-wrapper">
           <!-- search bar injected by JS -->
         </div>
@@ -35,6 +39,9 @@
       <main id="map" aria-label="Kaart">
         <!-- Mobile map overlay: search + chips, positioned inside map -->
         <div id="map-overlay">
+          <span class="brand-badge" aria-hidden="true">
+            <span class="brand-badge-map-emoji">🗺️</span>Kinderkaart
+          </span>
           <div id="mobile-search-wrapper">
             <!-- search bar injected by JS -->
           </div>
@@ -52,7 +59,9 @@
 
     <!-- Mobile bottom sheet -->
     <div id="bottom-sheet" role="region" aria-label="Resultaten en details">
-      <div class="sheet-handle" role="button" tabindex="0" aria-label="Sleep om te openen of sluiten"></div>
+      <div class="sheet-handle" role="button" tabindex="0" aria-label="Sleep om te openen of sluiten">
+        <span class="sheet-collapsed-cta">Bekijk lijst →</span>
+      </div>
       <div class="sheet-header">
         <span id="sheet-count"></span>
       </div>

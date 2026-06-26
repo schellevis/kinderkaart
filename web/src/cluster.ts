@@ -20,6 +20,8 @@ export interface PointFeature {
     poiId: string;
     name: string;
     cats: string[];
+    /** Primary category (first element of cats) — used for map marker color. */
+    cat0: string;
     indoor: boolean | null;
     free: boolean | null;
   };
@@ -32,6 +34,7 @@ interface PointProps {
   poiId: string;
   name: string;
   cats: string[];
+  cat0: string;
   indoor: boolean | null;
   free: boolean | null;
 }
@@ -45,6 +48,7 @@ function toGeoJSON(pt: Point): Supercluster.PointFeature<PointProps> {
       poiId: pt.poiId,
       name: pt.name,
       cats: pt.cats,
+      cat0: pt.cats[0] ?? "",
       indoor: pt.indoor,
       free: pt.free,
     },

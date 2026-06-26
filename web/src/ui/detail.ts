@@ -5,6 +5,7 @@
 
 import { Favorites } from "../lib/favorites.js";
 import { safeHttpUrl } from "../lib/url.js";
+import { displayName } from "../lib/displayName.js";
 
 /**
  * Darker text/border colors for category chips — ≥4.5:1 contrast on #FBFAF7/white (WCAG AA).
@@ -79,6 +80,48 @@ export interface DetailOptions {
 
 const UNKNOWN = "onbekend";
 
+/** Fix 7b: Build the Website field row with hostname as link text. */
+function buildWebsiteField(website: string | null | undefined): HTMLElement {
+  const row = document.createElement("div");
+  row.className = "detail-field";
+
+  const lbl = document.createElement("span");
+  lbl.className = "detail-field-label";
+  lbl.textContent = "Website";
+
+  const val = document.createElement("span");
+  val.className = "detail-field-value";
+
+  if (!website) {
+    val.textContent = UNKNOWN;
+    val.classList.add("unknown");
+  } else {
+    const safe = safeHttpUrl(website);
+    if (safe !== null) {
+      const a = document.createElement("a");
+      a.href = safe;
+      // Show hostname (without www.) as the link text, or fallback to "Bezoek website →"
+      let linkText: string;
+      try {
+        const hostname = new URL(safe).hostname.replace(/^www\./, "");
+        linkText = hostname || "Bezoek website →";
+      } catch {
+        linkText = "Bezoek website →";
+      }
+      a.textContent = linkText;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      val.appendChild(a);
+    } else {
+      val.textContent = website;
+    }
+  }
+
+  row.appendChild(lbl);
+  row.appendChild(val);
+  return row;
+}
+
 function field(label: string, value: string | null | undefined, isLink = false): HTMLElement {
   const row = document.createElement("div");
   row.className = "detail-field";
@@ -122,13 +165,27 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
   const content = document.createElement("div");
   content.className = "detail-content";
 
+  // Set left accent-border color to the primary category's bright fill color
+  const primaryCat = opts.record.categories[0];
+  const accentColors: Record<string, string> = {
+    playground: "#F2994A",
+    museum: "#6C5CE7",
+    zoo: "#27AE60",
+    petting_zoo: "#8D6E63",
+    pool: "#2D9CDB",
+    play_park: "#EB5757",
+    restaurant_kidfriendly: "#F2C94C",
+  };
+  const accentColor = accentColors[primaryCat] ?? "var(--color-accent)";
+  content.style.setProperty("--detail-accent-color", accentColor);
+
   // Header: title + fav button + close button
   const header = document.createElement("div");
   header.className = "detail-header";
 
   const title = document.createElement("h2");
   title.className = "detail-title";
-  title.textContent = opts.record.name;
+  title.textContent = displayName(opts.record.name, opts.record.categories);
 
   const actions = document.createElement("div");
   actions.style.display = "flex";
@@ -188,11 +245,35 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
     : null;
   content.appendChild(field("Adres", addrStr));
 
+  // Fix 7a: Directions link
+  const dirRow = document.createElement("div");
+  dirRow.className = "detail-field";
+  const dirLbl = document.createElement("span");
+  dirLbl.className = "detail-field-label";
+  dirLbl.textContent = "Route";
+  const dirVal = document.createElement("span");
+  dirVal.className = "detail-field-value";
+  const dirUrl = safeHttpUrl(
+    `https://www.google.com/maps/dir/?api=1&destination=${opts.record.lat},${opts.record.lon}`
+  );
+  if (dirUrl) {
+    const dirA = document.createElement("a");
+    dirA.href = dirUrl;
+    dirA.textContent = "Routebeschrijving";
+    dirA.target = "_blank";
+    dirA.rel = "noopener noreferrer";
+    dirVal.appendChild(dirA);
+  }
+  dirRow.appendChild(dirLbl);
+  dirRow.appendChild(dirVal);
+  content.appendChild(dirRow);
+
   // Opening hours
   content.appendChild(field("Openingstijden", opts.record.opening_hours));
 
-  // Website
-  content.appendChild(field("Website", opts.record.website, true));
+  // Fix 7b: Website — show hostname as link text instead of full raw URL
+  const websiteRow = buildWebsiteField(opts.record.website);
+  content.appendChild(websiteRow);
 
   const evidence = opts.record.tags?.evidence ?? [];
   if (evidence.length > 0) {

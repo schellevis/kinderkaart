@@ -14,6 +14,7 @@ const CAT_LABELS: Record<string, string> = {
   restaurant_kidfriendly: "Restaurant",
 };
 
+/** Bright fill colors used on map markers */
 const CAT_COLORS: Record<string, string> = {
   playground: "#F2994A",
   museum: "#6C5CE7",
@@ -22,6 +23,20 @@ const CAT_COLORS: Record<string, string> = {
   pool: "#2D9CDB",
   play_park: "#EB5757",
   restaurant_kidfriendly: "#F2C94C",
+};
+
+/**
+ * Darker text/border colors for chip active state — ≥4.5:1 contrast (WCAG AA).
+ * Matches tokens.css --cat-chip-* values.
+ */
+const CAT_CHIP_TEXT_COLORS: Record<string, string> = {
+  playground: "#9A5A00",
+  museum: "#6C5CE7",
+  zoo: "#1A7A40",
+  petting_zoo: "#6B4E45",
+  pool: "#1A6899",
+  play_park: "#C0392B",
+  restaurant_kidfriendly: "#9A7A00",
 };
 
 const CAT_GLYPHS: Record<string, string> = {
@@ -34,6 +49,20 @@ const CAT_GLYPHS: Record<string, string> = {
   restaurant_kidfriendly: "🍽️",
 };
 
+/**
+ * Preferred display order for category chips — most family-salient first.
+ * Categories not listed here are appended at the end in whatever order they arrive.
+ */
+const CAT_ORDER = [
+  "playground",
+  "petting_zoo",
+  "zoo",
+  "play_park",
+  "pool",
+  "museum",
+  "restaurant_kidfriendly",
+];
+
 export interface FiltersOptions {
   categories: string[];
   filter: Filter;
@@ -41,27 +70,41 @@ export interface FiltersOptions {
 }
 
 export function createFilterChips(opts: FiltersOptions): HTMLElement {
+  // Wrap scroll row in a container that provides the right-edge fade mask
+  const wrapper = document.createElement("div");
+  wrapper.className = "chip-scroll-wrapper";
+
   const container = document.createElement("div");
   container.className = "chip-scroll";
   container.setAttribute("role", "group");
   container.setAttribute("aria-label", "Categorieën filteren");
 
-  for (const cat of opts.categories) {
+  // Sort categories according to CAT_ORDER preference
+  const sortedCats = [...opts.categories].sort((a, b) => {
+    const ia = CAT_ORDER.indexOf(a);
+    const ib = CAT_ORDER.indexOf(b);
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
+  });
+
+  for (const cat of sortedCats) {
     const chip = document.createElement("button");
     chip.className = "chip";
     chip.dataset.cat = cat;
     chip.setAttribute("type", "button");
     chip.setAttribute("aria-pressed", String(opts.filter.categories?.has(cat) ?? false));
 
-    const dot = document.createElement("span");
-    dot.className = "chip-dot";
-    dot.style.background = CAT_COLORS[cat] ?? "#9E9E9E";
-    dot.setAttribute("aria-hidden", "true");
+    // Set CSS variables for category-colored active state
+    const fillColor = CAT_COLORS[cat] ?? "#9E9E9E";
+    const textColor = CAT_CHIP_TEXT_COLORS[cat] ?? "#6B7280";
+    chip.style.setProperty("--chip-cat-color", fillColor);
+    chip.style.setProperty("--chip-cat-color-text", textColor);
 
-    chip.appendChild(dot);
-    chip.appendChild(document.createTextNode(
-      (CAT_GLYPHS[cat] ? CAT_GLYPHS[cat] + " " : "") + (CAT_LABELS[cat] ?? cat)
-    ));
+    // Emoji carries identity — no separate dot
+    chip.textContent =
+      (CAT_GLYPHS[cat] ? CAT_GLYPHS[cat] + " " : "") + (CAT_LABELS[cat] ?? cat);
 
     if (opts.filter.categories?.has(cat)) {
       chip.classList.add("active");
@@ -92,7 +135,8 @@ export function createFilterChips(opts: FiltersOptions): HTMLElement {
     container.appendChild(chip);
   }
 
-  return container;
+  wrapper.appendChild(container);
+  return wrapper;
 }
 
 export function createToggleBar(opts: FiltersOptions): HTMLElement {
@@ -113,6 +157,7 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
   for (const t of toggles) {
     const btn = document.createElement("button");
     btn.className = "toggle-btn";
+    btn.dataset.toggle = t.key;
     btn.setAttribute("type", "button");
     btn.setAttribute("aria-pressed", String(opts.filter[t.key] === true));
     btn.textContent = `${t.icon} ${t.label}`;
@@ -147,6 +192,7 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
   const ageInput = document.createElement("input");
   ageInput.type = "number";
   ageInput.id = "age-input";
+  ageInput.dataset.filterInput = "age";
   ageInput.min = "0";
   ageInput.max = "18";
   ageInput.placeholder = "–";
@@ -170,6 +216,7 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
   distanceLabel.className = "age-filter";
   distanceLabel.appendChild(document.createTextNode("Afstand: "));
   const distance = document.createElement("select");
+  distance.dataset.filterInput = "distance";
   const distanceOptions: Array<[string, number | null]> = [
     ["Alle", null], ["5 km", 5000], ["10 km", 10000],
     ["25 km", 25000], ["50 km", 50000],

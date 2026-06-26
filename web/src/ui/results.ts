@@ -3,6 +3,7 @@
  */
 
 import type { Point } from "../lib/points.js";
+import { displayName } from "../lib/displayName.js";
 
 const CAT_COLORS: Record<string, string> = {
   playground: "#F2994A",
@@ -49,14 +50,39 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
   while (container.firstChild) container.removeChild(container.firstChild);
 
   if (opts.points.length === 0) {
-    const empty = document.createElement("p");
-    empty.style.cssText = "padding:1rem; color: var(--color-ink-subtle); font-size: 0.875rem;";
-    empty.textContent = "Geen resultaten gevonden.";
+    const empty = document.createElement("div");
+    empty.className = "results-empty";
+
+    const emojiEl = document.createElement("div");
+    emojiEl.className = "results-empty-emoji";
+    emojiEl.setAttribute("aria-hidden", "true");
+    emojiEl.textContent = "🔍";
+
+    const msg = document.createElement("p");
+    msg.className = "results-empty-msg";
+    msg.textContent = "Geen resultaten gevonden.";
+
+    const sub = document.createElement("p");
+    sub.className = "results-empty-sub";
+    sub.textContent = "Probeer andere filters of een bredere zoekopdracht.";
+
+    empty.appendChild(emojiEl);
+    empty.appendChild(msg);
+    empty.appendChild(sub);
     container.appendChild(empty);
     return;
   }
 
   const max = opts.max ?? DEFAULT_MAX_RESULTS;
+
+  // Fix 6a: top truncation hint when list is capped
+  if (opts.points.length > max) {
+    const topHint = document.createElement("p");
+    topHint.className = "results-truncated-top";
+    topHint.textContent = `Dichtstbijzijnde ${max} van ${opts.points.length} getoond`;
+    container.appendChild(topHint);
+  }
+
   for (const pt of opts.points.slice(0, max)) {
     const item = document.createElement("button");
     item.type = "button";
@@ -82,7 +108,7 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
 
     const name = document.createElement("div");
     name.className = "result-name";
-    name.textContent = pt.name;
+    name.textContent = displayName(pt.name, pt.cats);
 
     const meta = document.createElement("div");
     meta.className = "result-meta";
@@ -108,8 +134,6 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
   if (opts.points.length > max) {
     const more = document.createElement("p");
     more.className = "results-truncated";
-    more.style.cssText =
-      "padding:0.75rem 1rem; color: var(--color-ink-subtle); font-size: 0.8125rem;";
     more.textContent =
       `Eerste ${max} van ${opts.points.length} getoond — zoom in op de kaart, ` +
       `zoek of filter om te verfijnen.`;

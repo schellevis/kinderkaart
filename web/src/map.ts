@@ -84,7 +84,7 @@ export function initMap(
           id: "pdok-tiles",
           type: "raster",
           source: "pdok",
-          paint: { "raster-opacity": 1 },
+          paint: { "raster-opacity": 0.9 },
         },
       ],
     },
@@ -156,16 +156,27 @@ export function addClusterLayers(map: maplibregl.Map): void {
     },
   });
 
-  // Individual point circles
+  // Individual point circles — colored by primary category (cat0 property)
   map.addLayer({
     id: POINTS_LAYER,
     type: "circle",
     source: GEO_SOURCE,
     filter: ["!=", ["get", "cluster"], true],
     paint: {
-      "circle-color": "#2F7D6B",
+      "circle-color": [
+        "match",
+        ["get", "cat0"],
+        "playground",             CAT_COLORS["playground"],
+        "museum",                 CAT_COLORS["museum"],
+        "zoo",                    CAT_COLORS["zoo"],
+        "petting_zoo",            CAT_COLORS["petting_zoo"],
+        "pool",                   CAT_COLORS["pool"],
+        "play_park",              CAT_COLORS["play_park"],
+        "restaurant_kidfriendly", CAT_COLORS["restaurant_kidfriendly"],
+        /* default */ "#9E9E9E",
+      ],
       "circle-radius": 10,
-      "circle-opacity": 0.9,
+      "circle-opacity": 0.92,
       "circle-stroke-width": 2,
       "circle-stroke-color": "#fff",
     },

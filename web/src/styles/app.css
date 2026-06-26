@@ -30,9 +30,64 @@ html, body {
   min-width: 0;
   height: 100%;
   position: relative;
+  background: var(--map-bg);
 }
 
 /* ── Side panel (desktop ≥960px) ──────────────────────── */
+/* ── Brand wordmark (desktop header) ─────────────────────── */
+.brand-header {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.brand-name {
+  font-size: var(--font-size-brand);
+  font-weight: 800;
+  color: var(--color-accent);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.brand-tagline {
+  font-size: var(--font-size-tagline);
+  color: var(--color-ink-subtle);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* ── Brand badge (mobile map corner) ────────────────────── */
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  padding: 4px var(--space-3) 4px var(--space-2);
+  box-shadow: var(--shadow-sm);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  white-space: nowrap;
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  pointer-events: none;
+}
+
+.brand-badge-map-emoji {
+  font-size: 1rem;
+}
+
+@media (min-width: 960px) {
+  .brand-badge {
+    display: none;
+  }
+}
+
 #side-panel {
   display: none;
   width: 360px;
@@ -43,11 +98,17 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   z-index: 10;
+  box-shadow: var(--shadow-panel);
 }
 
 @media (min-width: 960px) {
   #side-panel {
     display: flex;
+  }
+  /* The side panel already hosts search + filters on desktop; the in-map
+     overlay copy is for mobile only, so hide it to avoid a duplicate bar. */
+  #map-overlay {
+    display: none;
   }
 }
 
@@ -99,11 +160,28 @@ html, body {
 
 /* ── Desktop search wrapper ─────────────────────────────── */
 #panel-search-wrapper {
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-4);
   border-bottom: 1px solid var(--color-border);
 }
 
 /* ── Category filter chips ──────────────────────────────── */
+.chip-scroll-wrapper {
+  position: relative;
+}
+
+/* Edge-fade only makes sense on the desktop panel where it overlays a known bg */
+#panel-filters .chip-scroll-wrapper::after,
+#bottom-sheet .chip-scroll-wrapper::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  pointer-events: none;
+  background: linear-gradient(to right, transparent, var(--color-surface-panel));
+}
+
 .chip-scroll {
   display: flex;
   gap: var(--space-2);
@@ -123,17 +201,18 @@ html, body {
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  border: 2px solid transparent;
+  border: 2px solid var(--color-border);
   background: var(--color-surface-card);
   color: var(--color-ink);
-  font-size: var(--font-size-sm);
+  font-size: 0.9375rem; /* ~15px */
   font-family: var(--font-sans);
   cursor: pointer;
   white-space: nowrap;
-  min-height: 44px;
+  min-height: 40px;
   box-shadow: var(--shadow-sm);
   transition: background var(--duration-fast) var(--ease-out),
               border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
               transform var(--duration-fast) var(--ease-out);
 }
 
@@ -142,17 +221,11 @@ html, body {
   outline-offset: 2px;
 }
 
+/* Active state: use each category's own color via inline CSS vars set by JS */
 .chip.active {
-  background: var(--color-accent);
-  color: #fff;
-  border-color: var(--color-accent);
-}
-
-.chip-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
+  background: color-mix(in srgb, var(--chip-cat-color, var(--color-accent)) 15%, white);
+  color: var(--chip-cat-color-text, var(--color-accent));
+  border-color: var(--chip-cat-color, var(--color-accent));
 }
 
 /* ── Toggles bar ────────────────────────────────────────── */
@@ -161,6 +234,7 @@ html, body {
   gap: var(--space-2);
   padding: var(--space-1) var(--space-3) var(--space-2);
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .toggle-btn {
@@ -172,11 +246,13 @@ html, body {
   border: 2px solid var(--color-border);
   background: var(--color-surface-card);
   color: var(--color-ink);
-  font-size: var(--font-size-sm);
+  font-size: 0.9375rem; /* ~15px — matches chip */
   font-family: var(--font-sans);
   cursor: pointer;
-  min-height: 44px;
-  transition: background var(--duration-fast), border-color var(--duration-fast);
+  min-height: 40px;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--duration-fast), border-color var(--duration-fast),
+              color var(--duration-fast);
 }
 
 .toggle-btn:hover, .toggle-btn:focus-visible {
@@ -187,7 +263,7 @@ html, body {
 .toggle-btn.active {
   background: var(--color-accent-light);
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-hover);
 }
 
 /* ── Results list ───────────────────────────────────────── */
@@ -234,7 +310,7 @@ html, body {
 }
 
 .result-name {
-  font-size: var(--font-size-sm);
+  font-size: 0.9375rem; /* ~15px — up from 0.875rem */
   font-weight: 600;
   color: var(--color-ink);
   white-space: nowrap;
@@ -243,8 +319,8 @@ html, body {
 }
 
 .result-meta {
-  font-size: var(--font-size-xs);
-  color: var(--color-ink-subtle);
+  font-size: var(--font-size-sm); /* ~14px — up from 0.75rem */
+  color: #5A6270; /* manually darkened for ≥4.5:1 on white */
   margin-top: 2px;
 }
 
@@ -276,18 +352,34 @@ html, body {
 
 .sheet-handle {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-4) var(--space-1);
   cursor: grab;
   touch-action: none;
 }
 
-.sheet-handle::after {
+.sheet-handle::before {
   content: "";
-  width: 40px;
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-border);
+  width: 48px;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--color-ink-subtle);
+  opacity: 0.35;
+}
+
+/* Collapsed label — shows "Bekijk lijst →" hint when sheet is closed */
+#bottom-sheet.collapsed .sheet-collapsed-cta {
+  display: block;
+}
+
+.sheet-collapsed-cta {
+  display: none;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-accent);
+  padding-bottom: var(--space-1);
 }
 
 .sheet-header {
@@ -295,6 +387,10 @@ html, body {
   font-size: var(--font-size-sm);
   color: var(--color-ink-subtle);
   border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 /* ── Detail panel ───────────────────────────────────────── */
@@ -313,6 +409,7 @@ html, body {
 
 .detail-content {
   padding: var(--space-4);
+  border-left: 4px solid var(--detail-accent-color, var(--color-accent));
 }
 
 .detail-header {
@@ -324,31 +421,35 @@ html, body {
 }
 
 .detail-title {
-  font-size: var(--font-size-lg);
+  font-size: 1.25rem; /* ~20px — up from 1.125rem */
   font-weight: 700;
   line-height: 1.3;
 }
 
 .detail-close {
-  background: none;
-  border: none;
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  font-size: 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--color-ink-subtle);
   padding: var(--space-1);
-  min-height: 44px;
-  min-width: 44px;
+  min-height: 36px;
+  min-width: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   flex-shrink: 0;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .detail-close:hover, .detail-close:focus-visible {
-  background: var(--color-surface-panel);
+  background: var(--color-border);
+  color: var(--color-ink);
   outline: 2px solid var(--color-accent);
 }
+
 
 .detail-cats {
   display: flex;
@@ -396,14 +497,14 @@ html, body {
 }
 
 .fav-btn {
-  background: none;
-  border: 2px solid var(--color-border);
+  background: var(--color-surface-panel);
+  border: 1px solid var(--color-border);
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: var(--space-2);
-  border-radius: var(--radius-sm);
-  min-height: 44px;
-  min-width: 44px;
+  font-size: 1.1rem;
+  padding: var(--space-1);
+  border-radius: var(--radius-full);
+  min-height: 36px;
+  min-width: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -413,6 +514,7 @@ html, body {
 .fav-btn:hover, .fav-btn:focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
+  background: var(--color-border);
 }
 
 .fav-btn.active {
@@ -536,35 +638,142 @@ html, body {
 
 /* ── Age filter input ───────────────────────────────────── */
 .age-filter {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  padding: var(--space-1) var(--space-3) var(--space-2);
+  /* sits inside .toggles-bar which already has left padding */
 }
 
 .age-filter label {
-  font-size: var(--font-size-sm);
-  color: var(--color-ink-subtle);
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+/* Unified pill inputs — match chip/toggle visual language */
+.age-filter input[type="number"],
+.age-filter select {
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-card);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  color: var(--color-ink);
+  box-shadow: var(--shadow-sm);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color var(--duration-fast);
 }
 
 .age-filter input[type="number"] {
-  width: 60px;
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-sm);
-  min-height: 44px;
+  width: 72px;
+  text-align: center;
 }
 
-.age-filter input[type="number"]:focus {
+/* Custom chevron for select */
+.age-filter select {
+  padding-right: calc(var(--space-3) + 18px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  min-width: 100px;
+}
+
+.age-filter input[type="number"]:focus,
+.age-filter select:focus {
   outline: 2px solid var(--color-accent);
   border-color: var(--color-accent);
 }
 
 /* ── Result count ────────────────────────────────────────── */
 #result-count {
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+/* ── Sort basis hint ─────────────────────────────────────── */
+.sort-basis-hint {
+  padding: 0 var(--space-4) var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-subtle);
+}
+
+/* ── Filter hint (distance / location) ──────────────────── */
+.filter-hint {
+  padding: var(--space-1) var(--space-3) var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-ink-subtle);
+  background: var(--color-accent-light);
+  border-radius: var(--radius-sm);
+  margin: 0 var(--space-3) var(--space-1);
+}
+
+/* ── Clear filters button ────────────────────────────────── */
+.clear-filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin: 0 var(--space-4) var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  border: 1.5px solid var(--color-accent);
+  border-radius: var(--radius-full);
+  background: var(--color-accent-light);
+  color: var(--color-accent-hover);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  min-height: 32px;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+
+.clear-filters-btn:hover,
+.clear-filters-btn:focus-visible {
+  background: var(--color-accent);
+  color: #fff;
+  outline: none;
+}
+
+/* ── Empty results state ─────────────────────────────────── */
+.results-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+
+.results-empty-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.results-empty-msg {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.results-empty-sub {
+  font-size: var(--font-size-sm);
+  color: var(--color-ink-subtle);
+  max-width: 260px;
+}
+
+/* ── Truncation hints ────────────────────────────────────── */
+.results-truncated-top,
+.results-truncated {
   padding: var(--space-2) var(--space-4);
   font-size: var(--font-size-xs);
   color: var(--color-ink-subtle);
+  background: var(--color-surface-panel);
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
 }

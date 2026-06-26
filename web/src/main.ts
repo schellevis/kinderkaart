@@ -15,7 +15,7 @@ import { detailUrl } from "./lib/shard.js";
 import { Favorites } from "./lib/favorites.js";
 import { StateStore, parseUrlState } from "./state.js";
 import { initMap, addClusterLayers, updateClusterData, LAYERS } from "./map.js";
-import { createSearchBar } from "./ui/search.js";
+import { createSearchBar, getSearchInput } from "./ui/search.js";
 import { createFilterChips, createToggleBar } from "./ui/filters.js";
 import { renderResults } from "./ui/results.js";
 import { renderDetail } from "./ui/detail.js";
@@ -231,6 +231,21 @@ function updateResultCount(count: number): void {
   if (sheetCount) sheetCount.textContent = text;
 }
 
+/** Fix 6b: show sort basis below result count when not searching. */
+function updateSortBasis(state: ReturnType<StateStore["get"]>): void {
+  for (const id of ["sort-basis", "sheet-sort-basis"]) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    if (state.searchQuery) {
+      el.textContent = "";
+    } else if (state.userLocation) {
+      el.textContent = "Gesorteerd op afstand tot je locatie";
+    } else {
+      el.textContent = "Gesorteerd op afstand tot kaartmidden";
+    }
+  }
+}
+
 // ── UI wiring ─────────────────────────────────────────────
 
 function buildUI(
@@ -243,6 +258,87 @@ function buildUI(
 ): void {
   const favs = new Favorites();
   let currentDisplayPoints: Point[] = allPoints;
+
+  // Chip/toggle container references (assigned after DOM injection below)
+  let chips1: HTMLElement;
+  let chips2: HTMLElement;
+  let toggles1: HTMLElement;
+  let toggles2: HTMLElement;
+  let searchBar1: HTMLElement;
+  let searchBar2: HTMLElement;
+
+  // ── Fix 5: sync all controls to the current store state ──
+  function syncControls(): void {
+    const state = store.get();
+
+    // Sync chips (both sets)
+    for (const container of [chips1, chips2]) {
+      if (!container) continue;
+      for (const chip of container.querySelectorAll<HTMLElement>("[data-cat]")) {
+        const cat = chip.dataset.cat ?? "";
+        const active = state.filter.categories?.has(cat) ?? false;
+        chip.classList.toggle("active", active);
+        chip.setAttribute("aria-pressed", String(active));
+      }
+    }
+
+    // Sync toggle buttons (both sets)
+    for (const bar of [toggles1, toggles2]) {
+      if (!bar) continue;
+      for (const btn of bar.querySelectorAll<HTMLElement>("[data-toggle]")) {
+        const key = btn.dataset.toggle as "indoor" | "free";
+        const active = state.filter[key] === true;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-pressed", String(active));
+      }
+      // Age input
+      const ageInput = bar.querySelector<HTMLInputElement>("[data-filter-input='age']");
+      if (ageInput) {
+        ageInput.value = state.filter.ageForChild == null ? "" : String(state.filter.ageForChild);
+      }
+      // Distance select
+      const distanceSelect = bar.querySelector<HTMLSelectElement>("[data-filter-input='distance']");
+      if (distanceSelect) {
+        distanceSelect.value = state.filter.maxDistanceM == null ? "" : String(state.filter.maxDistanceM);
+      }
+    }
+
+    // Sync search inputs
+    for (const bar of [searchBar1, searchBar2]) {
+      if (!bar) continue;
+      const input = getSearchInput(bar);
+      if (input && input !== document.activeElement) {
+        input.value = state.searchQuery;
+      }
+    }
+
+    // Sync clear-filter button visibility
+    const hasActiveFilters = isFilterActive(state);
+    for (const id of ["clear-filters-btn", "sheet-clear-filters-btn"]) {
+      const btn = document.getElementById(id);
+      if (btn) btn.style.display = hasActiveFilters ? "" : "none";
+    }
+
+    // Fix 6c: show distance-filter hint when filter is active but no user location
+    const showDistHint = state.filter.maxDistanceM !== null && state.userLocation === null;
+    for (const id of ["dist-hint", "sheet-dist-hint"]) {
+      const el = document.getElementById(id);
+      if (el) el.style.display = showDistHint ? "" : "none";
+    }
+  }
+
+  /** Returns true when any filter or search query is active. */
+  function isFilterActive(state: ReturnType<StateStore["get"]>): boolean {
+    return (
+      (state.filter.categories !== null && state.filter.categories.size > 0) ||
+      state.filter.indoor !== null ||
+      state.filter.free !== null ||
+      state.filter.ageForChild !== null ||
+      state.filter.maxDistanceM !== null ||
+      state.searchQuery !== "" ||
+      state.favoritesOnly
+    );
+  }
 
   // ── Helper: apply filters + render everything ──
   function applyAndRender(): void {
@@ -288,7 +384,19 @@ function buildUI(
     });
 
     updateClusterData(map, clusterer);
-    updateResultCount(clusterer.filteredCount());
+
+    // Fix 2: count reflects search results when a query is active
+    if (state.searchQuery) {
+      updateResultCount(listPoints.length);
+    } else {
+      updateResultCount(clusterer.filteredCount());
+    }
+
+    // Fix 6b: sort-basis line below result count
+    updateSortBasis(state);
+
+    // Fix 5: sync all controls to match store state
+    syncControls();
 
     // Re-render results list
     const desktopList = document.getElementById("results-list");
@@ -369,8 +477,8 @@ function buildUI(
         while (md.firstChild) md.removeChild(md.firstChild);
       }
       // Expand bottom sheet back to results
-      const sheet = document.getElementById("bottom-sheet");
-      if (sheet) sheet.classList.add("collapsed");
+      const bottomSheet = document.getElementById("bottom-sheet");
+      if (bottomSheet) bottomSheet.classList.add("collapsed");
       applyAndRender();
     };
 
@@ -391,29 +499,58 @@ function buildUI(
     if (md) {
       renderDetail(md, detailOpts);
       // Expand bottom sheet
-      const sheet = document.getElementById("bottom-sheet");
-      if (sheet) sheet.classList.remove("collapsed");
+      const bottomSheet = document.getElementById("bottom-sheet");
+      if (bottomSheet) bottomSheet.classList.remove("collapsed");
     }
 
     applyAndRender();
   }
 
+  // ── Fix 4: clear filters helper ──
+  function clearAllFilters(): void {
+    store.update({
+      filter: {
+        categories: null,
+        indoor: null,
+        free: null,
+        ageForChild: null,
+        maxDistanceM: null,
+      },
+      searchQuery: "",
+      favoritesOnly: false,
+    });
+    applyAndRender();
+  }
+
   // ── Build search bars ──
-  const searchBar1 = createSearchBar({
+  // Shared handler: update state, re-render, then fit the map to the matches
+  // and reveal the mobile results sheet (a collapsed sheet hides them entirely).
+  function handleSearchInput(q: string): void {
+    store.update({ searchQuery: q });
+    applyAndRender();
+    if (q && currentDisplayPoints.length > 0) {
+      const sample = currentDisplayPoints.slice(0, 50);
+      const lons = sample.map((p) => p.lon);
+      const lats = sample.map((p) => p.lat);
+      const bounds: [number, number, number, number] = [
+        Math.min(...lons), Math.min(...lats),
+        Math.max(...lons), Math.max(...lats),
+      ];
+      map.fitBounds(bounds, { padding: 60, maxZoom: 13, duration: 600 });
+      // Reveal results on mobile; harmless on desktop (sheet is display:none ≥960px).
+      document.getElementById("bottom-sheet")?.classList.remove("collapsed");
+    }
+  }
+
+  searchBar1 = createSearchBar({
     placeholder: "Zoek activiteiten…",
     initialValue: store.get().searchQuery,
-    onInput: (q) => {
-      store.update({ searchQuery: q });
-      applyAndRender();
-    },
+    onInput: handleSearchInput,
   });
-  const searchBar2 = createSearchBar({
+  searchBar2 = createSearchBar({
     placeholder: "Zoek activiteiten…",
     initialValue: store.get().searchQuery,
-    onInput: (q) => {
-      store.update({ searchQuery: q });
-      applyAndRender();
-    },
+    onInput: handleSearchInput,
   });
 
   const panelSearch = document.getElementById("panel-search-wrapper");
@@ -433,21 +570,77 @@ function buildUI(
     },
   };
 
-  const chips1 = createFilterChips(filterOpts);
-  const toggles1 = createToggleBar(filterOpts);
-  const chips2 = createFilterChips(filterOpts);
-  const toggles2 = createToggleBar(filterOpts);
+  chips1 = createFilterChips(filterOpts);
+  toggles1 = createToggleBar(filterOpts);
+  chips2 = createFilterChips(filterOpts);
+  toggles2 = createToggleBar(filterOpts);
+
+  // ── Fix 6c: distance-filter hint ──
+  const distHint = document.createElement("p");
+  distHint.id = "dist-hint";
+  distHint.className = "filter-hint";
+  distHint.textContent = "📍 Zet je locatie aan voor afstand vanaf jou.";
+  distHint.style.display = "none";
+
+  const sheetDistHint = document.createElement("p");
+  sheetDistHint.id = "sheet-dist-hint";
+  sheetDistHint.className = "filter-hint";
+  sheetDistHint.textContent = "📍 Zet je locatie aan voor afstand vanaf jou.";
+  sheetDistHint.style.display = "none";
 
   const panelFilters = document.getElementById("panel-filters");
   if (panelFilters) {
     panelFilters.appendChild(chips1);
     panelFilters.appendChild(toggles1);
+    panelFilters.appendChild(distHint);
   }
 
   const mobileFilters = document.getElementById("mobile-filters");
   if (mobileFilters) {
     mobileFilters.appendChild(chips2);
     mobileFilters.appendChild(toggles2);
+    mobileFilters.appendChild(sheetDistHint);
+  }
+
+  // ── Fix 4: "Wis filters" button — desktop panel ──
+  const clearBtn = document.createElement("button");
+  clearBtn.id = "clear-filters-btn";
+  clearBtn.type = "button";
+  clearBtn.className = "clear-filters-btn";
+  clearBtn.textContent = "Wis filters";
+  clearBtn.style.display = "none";
+  clearBtn.addEventListener("click", clearAllFilters);
+
+  // Fix 4: sheet header clear button
+  const sheetClearBtn = document.createElement("button");
+  sheetClearBtn.id = "sheet-clear-filters-btn";
+  sheetClearBtn.type = "button";
+  sheetClearBtn.className = "clear-filters-btn";
+  sheetClearBtn.textContent = "Wis filters";
+  sheetClearBtn.style.display = "none";
+  sheetClearBtn.addEventListener("click", clearAllFilters);
+
+  // Fix 6b: sort-basis elements
+  const sortBasisEl = document.createElement("p");
+  sortBasisEl.id = "sort-basis";
+  sortBasisEl.className = "sort-basis-hint";
+
+  const sheetSortBasisEl = document.createElement("p");
+  sheetSortBasisEl.id = "sheet-sort-basis";
+  sheetSortBasisEl.className = "sort-basis-hint";
+
+  // Insert clear button + sort basis near result count in side panel
+  const resultCountEl = document.getElementById("result-count");
+  if (resultCountEl?.parentNode) {
+    resultCountEl.parentNode.insertBefore(clearBtn, resultCountEl.nextSibling);
+    resultCountEl.parentNode.insertBefore(sortBasisEl, clearBtn.nextSibling);
+  }
+
+  // Insert in sheet header
+  const sheetHeader = document.querySelector(".sheet-header");
+  if (sheetHeader) {
+    sheetHeader.appendChild(sheetClearBtn);
+    sheetHeader.appendChild(sheetSortBasisEl);
   }
 
   // ── Map move → re-cluster ──
@@ -479,33 +672,40 @@ function buildUI(
     map.getCanvas().style.cursor = "";
   });
 
-  // ── Bottom sheet drag ──
+  // ── Fix 8: Bottom sheet drag with Pointer Events ──
   const sheet = document.getElementById("bottom-sheet");
   if (sheet) {
     let startY = 0;
     let startTransform = 0;
+    let dragging = false;
     const handle = sheet.querySelector(".sheet-handle") as HTMLElement | null;
 
-    const onStart = (y: number) => {
-      startY = y;
+    const onPointerStart = (e: PointerEvent) => {
+      handle?.setPointerCapture(e.pointerId);
+      dragging = true;
+      startY = e.clientY;
       const t = new DOMMatrix(getComputedStyle(sheet).transform);
       startTransform = t.m42 ?? 0;
     };
-    const onMove = (y: number) => {
-      const dy = y - startY;
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragging) return;
+      const dy = e.clientY - startY;
       const next = Math.max(0, startTransform + dy);
       sheet.style.transform = `translateY(${next}px)`;
     };
-    const onEnd = (y: number) => {
-      const dy = y - startY;
+    const onPointerEnd = (e: PointerEvent) => {
+      if (!dragging) return;
+      dragging = false;
+      const dy = e.clientY - startY;
       sheet.style.transform = "";
       if (dy > 80) sheet.classList.add("collapsed");
       else sheet.classList.remove("collapsed");
     };
 
-    handle?.addEventListener("touchstart", (e) => onStart(e.touches[0].clientY), { passive: true });
-    handle?.addEventListener("touchmove", (e) => onMove(e.touches[0].clientY), { passive: true });
-    handle?.addEventListener("touchend", (e) => onEnd(e.changedTouches[0].clientY), { passive: true });
+    handle?.addEventListener("pointerdown", onPointerStart);
+    handle?.addEventListener("pointermove", onPointerMove);
+    handle?.addEventListener("pointerup", onPointerEnd);
+    handle?.addEventListener("pointercancel", onPointerEnd);
 
     // Also keyboard: Enter/Space on handle
     handle?.addEventListener("keydown", (e) => {
