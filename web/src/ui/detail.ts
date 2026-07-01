@@ -6,6 +6,7 @@
 import { Favorites } from "../lib/favorites.js";
 import { safeHttpUrl } from "../lib/url.js";
 import { displayName } from "../lib/displayName.js";
+import { CATEGORY_ICONS, CLOSE_ICON, HEART_FILLED_ICON, HEART_OUTLINE_ICON, iconSpan } from "../lib/icons.js";
 
 /**
  * Darker text/border colors for category chips — ≥4.5:1 contrast on #FBFAF7/white (WCAG AA).
@@ -19,16 +20,6 @@ const CAT_CHIP_COLORS: Record<string, string> = {
   pool: "#1A6899",
   play_park: "#C0392B",
   restaurant_kidfriendly: "#9A7A00",
-};
-
-const CAT_GLYPHS: Record<string, string> = {
-  playground: "🛝",
-  museum: "🏛️",
-  zoo: "🦁",
-  petting_zoo: "🐑",
-  pool: "🏊",
-  play_park: "🌳",
-  restaurant_kidfriendly: "🍽️",
 };
 
 const CAT_LABELS: Record<string, string> = {
@@ -195,14 +186,14 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
   favBtn.className = "fav-btn";
   favBtn.setAttribute("type", "button");
   const isFav = favs.has(opts.poiId);
-  favBtn.textContent = isFav ? "❤️" : "🤍";
+  favBtn.innerHTML = isFav ? HEART_FILLED_ICON : HEART_OUTLINE_ICON;
   favBtn.setAttribute("aria-label", isFav ? "Verwijder uit favorieten" : "Voeg toe aan favorieten");
   favBtn.setAttribute("aria-pressed", String(isFav));
   if (isFav) favBtn.classList.add("active");
 
   favBtn.addEventListener("click", () => {
     const now = favs.toggle(opts.poiId);
-    favBtn.textContent = now ? "❤️" : "🤍";
+    favBtn.innerHTML = now ? HEART_FILLED_ICON : HEART_OUTLINE_ICON;
     favBtn.setAttribute("aria-label", now ? "Verwijder uit favorieten" : "Voeg toe aan favorieten");
     favBtn.setAttribute("aria-pressed", String(now));
     favBtn.classList.toggle("active", now);
@@ -213,7 +204,7 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
   closeBtn.className = "detail-close";
   closeBtn.setAttribute("type", "button");
   closeBtn.setAttribute("aria-label", "Sluit details");
-  closeBtn.textContent = "✕";
+  closeBtn.innerHTML = CLOSE_ICON;
   closeBtn.addEventListener("click", opts.onClose);
 
   actions.appendChild(favBtn);
@@ -231,7 +222,9 @@ export function renderDetail(container: HTMLElement, opts: DetailOptions): void 
     const chipColor = CAT_CHIP_COLORS[cat] ?? "#6B7280";
     chip.style.color = chipColor;
     chip.style.borderColor = chipColor;
-    chip.textContent = (CAT_GLYPHS[cat] ?? "") + " " + (CAT_LABELS[cat] ?? cat);
+    const icon = CATEGORY_ICONS[cat];
+    if (icon) chip.appendChild(iconSpan(icon));
+    chip.appendChild(document.createTextNode(CAT_LABELS[cat] ?? cat));
     cats.appendChild(chip);
   }
 

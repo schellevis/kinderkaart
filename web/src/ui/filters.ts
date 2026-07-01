@@ -3,6 +3,7 @@
  */
 
 import type { Filter } from "../lib/filter.js";
+import { CATEGORY_ICONS, FREE_ICON, HOME_ICON, iconSpan } from "../lib/icons.js";
 
 const CAT_LABELS: Record<string, string> = {
   playground: "Speeltuin",
@@ -37,16 +38,6 @@ const CAT_CHIP_TEXT_COLORS: Record<string, string> = {
   pool: "#1A6899",
   play_park: "#C0392B",
   restaurant_kidfriendly: "#9A7A00",
-};
-
-const CAT_GLYPHS: Record<string, string> = {
-  playground: "🛝",
-  museum: "🏛️",
-  zoo: "🦁",
-  petting_zoo: "🐑",
-  pool: "🏊",
-  play_park: "🌳",
-  restaurant_kidfriendly: "🍽️",
 };
 
 /**
@@ -102,9 +93,10 @@ export function createFilterChips(opts: FiltersOptions): HTMLElement {
     chip.style.setProperty("--chip-cat-color", fillColor);
     chip.style.setProperty("--chip-cat-color-text", textColor);
 
-    // Emoji carries identity — no separate dot
-    chip.textContent =
-      (CAT_GLYPHS[cat] ? CAT_GLYPHS[cat] + " " : "") + (CAT_LABELS[cat] ?? cat);
+    // Icon carries identity — no separate dot
+    const icon = CATEGORY_ICONS[cat];
+    if (icon) chip.appendChild(iconSpan(icon));
+    chip.appendChild(document.createTextNode(CAT_LABELS[cat] ?? cat));
 
     if (opts.filter.categories?.has(cat)) {
       chip.classList.add("active");
@@ -150,8 +142,8 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
     label: string;
     icon: string;
   }> = [
-    { key: "indoor", label: "Binnen", icon: "🏠" },
-    { key: "free", label: "Gratis", icon: "🆓" },
+    { key: "indoor", label: "Binnen", icon: HOME_ICON },
+    { key: "free", label: "Gratis", icon: FREE_ICON },
   ];
 
   for (const t of toggles) {
@@ -160,7 +152,8 @@ export function createToggleBar(opts: FiltersOptions): HTMLElement {
     btn.dataset.toggle = t.key;
     btn.setAttribute("type", "button");
     btn.setAttribute("aria-pressed", String(opts.filter[t.key] === true));
-    btn.textContent = `${t.icon} ${t.label}`;
+    btn.appendChild(iconSpan(t.icon));
+    btn.appendChild(document.createTextNode(t.label));
 
     if (opts.filter[t.key] === true) {
       btn.classList.add("active");

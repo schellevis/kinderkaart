@@ -4,6 +4,7 @@
 
 import type { Point } from "../lib/points.js";
 import { displayName } from "../lib/displayName.js";
+import { CATEGORY_ICONS, PIN_ICON, SEARCH_ICON, iconSpan } from "../lib/icons.js";
 
 const CAT_COLORS: Record<string, string> = {
   playground: "#F2994A",
@@ -13,16 +14,6 @@ const CAT_COLORS: Record<string, string> = {
   pool: "#2D9CDB",
   play_park: "#EB5757",
   restaurant_kidfriendly: "#F2C94C",
-};
-
-const CAT_GLYPHS: Record<string, string> = {
-  playground: "🛝",
-  museum: "🏛️",
-  zoo: "🦁",
-  petting_zoo: "🐑",
-  pool: "🏊",
-  play_park: "🌳",
-  restaurant_kidfriendly: "🍽️",
 };
 
 const CAT_LABELS: Record<string, string> = {
@@ -53,10 +44,7 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
     const empty = document.createElement("div");
     empty.className = "results-empty";
 
-    const emojiEl = document.createElement("div");
-    emojiEl.className = "results-empty-emoji";
-    emojiEl.setAttribute("aria-hidden", "true");
-    emojiEl.textContent = "🔍";
+    const emojiEl = iconSpan(SEARCH_ICON, "results-empty-emoji");
 
     const msg = document.createElement("p");
     msg.className = "results-empty-msg";
@@ -95,12 +83,13 @@ export function renderResults(container: HTMLElement, opts: ResultsOptions): voi
     }
 
     const color = CAT_COLORS[pt.cats[0]] ?? "#9E9E9E";
-    const glyph = CAT_GLYPHS[pt.cats[0]] ?? "📍";
+    const glyph = CATEGORY_ICONS[pt.cats[0]] ?? PIN_ICON;
 
     const marker = document.createElement("div");
     marker.className = "result-marker";
     marker.style.background = color + "33";
-    marker.textContent = glyph;
+    marker.style.color = color;
+    marker.innerHTML = glyph;
     marker.setAttribute("aria-hidden", "true");
 
     const info = document.createElement("div");

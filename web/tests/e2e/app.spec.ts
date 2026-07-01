@@ -250,7 +250,7 @@ test.describe("6. Favorites persist", () => {
     // Click the fav button
     const favBtn = detail.locator(".fav-btn");
     await favBtn.click();
-    await expect(favBtn).toHaveText("❤️");
+    await expect(favBtn).toHaveClass(/active/);
 
     // Check localStorage
     const stored = await page.evaluate(() => localStorage.getItem("kinderkaart:favs"));

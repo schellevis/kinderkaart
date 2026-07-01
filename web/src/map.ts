@@ -16,6 +16,7 @@
 import maplibregl from "maplibre-gl";
 import type { Clusterer } from "./cluster.js";
 import type { AppState } from "./state.js";
+import { categoryIcon } from "./lib/icons.js";
 
 // Verified PDOK tile URL (tested 2026-06-19)
 const PDOK_TILE_URL =
@@ -36,16 +37,6 @@ const CAT_COLORS: Record<string, string> = {
   restaurant_kidfriendly: "#F2C94C",
 };
 
-const CAT_GLYPHS: Record<string, string> = {
-  playground: "🛝",
-  museum: "🏛️",
-  zoo: "🦁",
-  petting_zoo: "🐑",
-  pool: "🏊",
-  play_park: "🌳",
-  restaurant_kidfriendly: "🍽️",
-};
-
 export function categoryColor(cats: string[]): string {
   for (const c of cats) {
     if (CAT_COLORS[c]) return CAT_COLORS[c];
@@ -53,11 +44,8 @@ export function categoryColor(cats: string[]): string {
   return "#9E9E9E";
 }
 
-export function categoryGlyph(cats: string[]): string {
-  for (const c of cats) {
-    if (CAT_GLYPHS[c]) return CAT_GLYPHS[c];
-  }
-  return "📍";
+export function categoryIconSvg(cats: string[]): string {
+  return categoryIcon(cats);
 }
 
 export function initMap(

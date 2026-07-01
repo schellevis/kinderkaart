@@ -23,6 +23,7 @@ import type { DetailRecord } from "./ui/detail.js";
 import type { Point } from "./lib/points.js";
 import type maplibregl from "maplibre-gl";
 import MapLibre from "maplibre-gl";
+import { PIN_ICON, iconSpan } from "./lib/icons.js";
 
 // ── Types ─────────────────────────────────────────────────
 
@@ -579,13 +580,15 @@ function buildUI(
   const distHint = document.createElement("p");
   distHint.id = "dist-hint";
   distHint.className = "filter-hint";
-  distHint.textContent = "📍 Zet je locatie aan voor afstand vanaf jou.";
+  distHint.appendChild(iconSpan(PIN_ICON));
+  distHint.appendChild(document.createTextNode(" Zet je locatie aan voor afstand vanaf jou."));
   distHint.style.display = "none";
 
   const sheetDistHint = document.createElement("p");
   sheetDistHint.id = "sheet-dist-hint";
   sheetDistHint.className = "filter-hint";
-  sheetDistHint.textContent = "📍 Zet je locatie aan voor afstand vanaf jou.";
+  sheetDistHint.appendChild(iconSpan(PIN_ICON));
+  sheetDistHint.appendChild(document.createTextNode(" Zet je locatie aan voor afstand vanaf jou."));
   sheetDistHint.style.display = "none";
 
   const panelFilters = document.getElementById("panel-filters");

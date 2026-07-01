@@ -2,6 +2,8 @@
  * Search bar UI component.
  */
 
+import { SEARCH_ICON, iconSpan } from "../lib/icons.js";
+
 export interface SearchBarOptions {
   placeholder?: string;
   initialValue?: string;
@@ -35,9 +37,7 @@ export function createSearchBar(opts: SearchBarOptions): HTMLElement {
     }
   });
 
-  const icon = document.createElement("span");
-  icon.textContent = "🔍";
-  icon.setAttribute("aria-hidden", "true");
+  const icon = iconSpan(SEARCH_ICON);
 
   wrapper.appendChild(icon);
   wrapper.appendChild(input);
