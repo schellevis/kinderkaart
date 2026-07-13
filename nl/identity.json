@@ -6724,9 +6724,12 @@
       "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357#b674910b": {
-      "aliases": [],
+      "aliases": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
+      ],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357",
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -6773,11 +6776,9 @@
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638": {
       "aliases": [],
-      "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
-      ],
+      "members": [],
       "missing_builds": 0,
-      "status": "active"
+      "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4447,5.51118": {
       "aliases": [],
@@ -7126,23 +7127,26 @@
       "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4505,5.46908": {
-      "aliases": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45053,5.4683",
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45101,5.46887"
-      ],
+      "aliases": [],
+      "members": [],
+      "missing_builds": 0,
+      "status": "tombstone"
+    },
+    "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4505,5.46908#bf4d05d6": {
+      "aliases": [],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4505,5.46908",
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45053,5.4683",
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45101,5.46887"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4505,5.46908"
       ],
       "missing_builds": 0,
       "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45053,5.4683": {
       "aliases": [],
-      "members": [],
+      "members": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45053,5.4683"
+      ],
       "missing_builds": 0,
-      "status": "tombstone"
+      "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45083,5.52111": {
       "aliases": [],
@@ -7170,9 +7174,11 @@
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45101,5.46887": {
       "aliases": [],
-      "members": [],
+      "members": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45101,5.46887"
+      ],
       "missing_builds": 0,
-      "status": "tombstone"
+      "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45124,5.45977": {
       "aliases": [],
@@ -16408,12 +16414,10 @@
     },
     "osm/node/11506493570": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/node/11506493570"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/11510277106": {
       "aliases": [],
@@ -28179,6 +28183,72 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/13993030736": {
+      "aliases": [],
+      "members": [
+        "osm/node/13993030736"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13993440366": {
+      "aliases": [],
+      "members": [
+        "osm/node/13993440366"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13996257489": {
+      "aliases": [],
+      "members": [
+        "osm/node/13996257489"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13996417662": {
+      "aliases": [],
+      "members": [
+        "osm/node/13996417662",
+        "osm/node/13996417663",
+        "osm/node/13996417664"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13997953052": {
+      "aliases": [],
+      "members": [
+        "osm/node/13997953052"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13998459393": {
+      "aliases": [],
+      "members": [
+        "osm/node/13998459393"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14002338507": {
+      "aliases": [],
+      "members": [
+        "osm/node/14002338507"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14004288789": {
+      "aliases": [],
+      "members": [
+        "osm/node/14004288789"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/1407128104": {
       "aliases": [],
       "members": [
@@ -28247,6 +28317,14 @@
       "aliases": [],
       "members": [
         "osm/node/1488661842"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/1489086809": {
+      "aliases": [],
+      "members": [
+        "osm/node/1489086809"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -44808,12 +44886,10 @@
     },
     "osm/node/4915479428": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/node/4915479428"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/4917488797": {
       "aliases": [],
@@ -46102,10 +46178,11 @@
     },
     "osm/node/5103177303": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/node/5103177303"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/5103715017": {
@@ -49003,10 +49080,11 @@
     },
     "osm/node/5628294121": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/node/5628294121"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/5630119424": {
@@ -50013,10 +50091,11 @@
     },
     "osm/node/5804217507": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/node/5804217507"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/5804642052": {
@@ -51034,12 +51113,10 @@
     },
     "osm/node/5961325586": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/node/5961325586"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/5961498290": {
       "aliases": [],
@@ -52641,10 +52718,11 @@
     },
     "osm/node/6247180485": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/node/6247180485"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/6247207016": {
@@ -55440,12 +55518,10 @@
     },
     "osm/node/6718159894": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/node/6718159894"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/6723790054": {
       "aliases": [],
@@ -59058,10 +59134,11 @@
     },
     "osm/node/7814518885": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/node/7814518885"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/7814994063": {
@@ -60093,12 +60170,10 @@
     },
     "osm/node/8187735311": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/node/8187735311"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/8187756683": {
       "aliases": [],
@@ -78464,12 +78539,10 @@
     },
     "osm/way/1064118598": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/way/1064118598"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/1064200926": {
       "aliases": [],
@@ -81329,12 +81402,10 @@
     },
     "osm/way/107804725": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/way/107804725"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/107819708": {
       "aliases": [],
@@ -82961,6 +83032,14 @@
       "aliases": [],
       "members": [
         "osm/way/108577050"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/108577656": {
+      "aliases": [],
+      "members": [
+        "osm/way/108577656"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -86694,10 +86773,11 @@
     },
     "osm/way/1104912039": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/way/1104912039"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/1104925764": {
@@ -99747,12 +99827,10 @@
     },
     "osm/way/1162920539": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/way/1162920539"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/1162920828": {
       "aliases": [],
@@ -128428,10 +128506,11 @@
     },
     "osm/way/1257349418": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/way/1257349418"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/1257368569": {
@@ -152975,6 +153054,15 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/way/1384965002": {
+      "aliases": [],
+      "members": [
+        "osm/way/1384965002",
+        "osm/way/1384965004"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/way/1385059972": {
       "aliases": [],
       "members": [
@@ -176227,6 +176315,362 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/way/1535679901": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535679901"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1535679902": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535679902"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1535679962": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535679962"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1535739185": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535739185"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1535826262": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535826262"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1535899366": {
+      "aliases": [],
+      "members": [
+        "osm/way/1535899366"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536092374": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536092374"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536119126": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536119126"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536250965": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536250965"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536297575": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536297575"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536360856": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536360856"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536364963": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536364963"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536366430": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536366430"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536599452": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536599452"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536607962": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536607962"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536784291": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536784291"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536887320": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536887320",
+        "osm/way/1536887321"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536943376": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536943376"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536943377": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536943377"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536962875": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536962875"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536985960": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536985960"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1536991582": {
+      "aliases": [],
+      "members": [
+        "osm/way/1536991582"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537119907": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537119907"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537147351": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537147351"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537163642": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537163642"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537178723": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537178723"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537183074": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537183074"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537433401": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537433401"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537433422": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537433422"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537442080": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537442080"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537443460": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537443460"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537449834": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537449834"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537482726": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537482726"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537485378": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537485378"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537509385": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537509385"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537526865": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537526865"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537571081": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537571081"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537637298": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537637298"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537649059": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537649059"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537652060": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537652060",
+        "osm/way/1537652061"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537694617": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537694617"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537703659": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537703659",
+        "osm/way/1537703660"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537709981": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537709981",
+        "osm/way/1537709983"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1537735509": {
+      "aliases": [],
+      "members": [
+        "osm/way/1537735509"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/way/154550417": {
       "aliases": [],
       "members": [
@@ -190860,6 +191304,14 @@
       "aliases": [],
       "members": [
         "osm/way/319948381"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/319949903": {
+      "aliases": [],
+      "members": [
+        "osm/way/319949903"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -216727,10 +217179,11 @@
     },
     "osm/way/521510676": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/way/521510676"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/521510677": {
@@ -248696,7 +249149,6 @@
     "osm/way/723153512": {
       "aliases": [],
       "members": [
-        "osm/way/723153512",
         "osm/way/723153513"
       ],
       "missing_builds": 0,
@@ -268415,14 +268867,10 @@
     },
     "osm/way/849353445": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/way/849353445",
-        "osm/way/849353446",
-        "osm/way/849353447"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/849353448": {
       "aliases": [],
@@ -285923,12 +286371,10 @@
     },
     "osm/way/95287049": {
       "aliases": [],
-      "last_missing_observation": "2026.07.06-6480d09",
-      "members": [
-        "osm/way/95287049"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.07.13-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/95288747": {
       "aliases": [],
@@ -286868,10 +287314,11 @@
     },
     "osm/way/957210827": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "osm/way/957210827"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/957270310": {
@@ -298504,10 +298951,11 @@
     },
     "wikidata-museums/Q106106048": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q106106048"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q10611062": {
@@ -298554,18 +299002,20 @@
     },
     "wikidata-museums/Q107060192": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q107060192"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q107572790": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q107572790"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q107656756": {
@@ -298709,7 +299159,6 @@
       "aliases": [],
       "members": [
         "museum-nl/museum-nl:oude-kerk",
-        "wikidata-museums/Q110541187",
         "wikidata-museums/Q623558"
       ],
       "missing_builds": 0,
@@ -299396,10 +299845,11 @@
     },
     "wikidata-museums/Q123438598": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q123438598"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q124080461": {
@@ -300002,8 +300452,7 @@
     "wikidata-museums/Q13866168": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:de-pont-museum",
-        "wikidata-museums/Q13866168"
+        "museum-nl/museum-nl:de-pont-museum"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -300018,10 +300467,11 @@
     },
     "wikidata-museums/Q138717595": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q138717595"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q13882236": {
@@ -300496,10 +300946,11 @@
     },
     "wikidata-museums/Q15962410": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q15962410"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q15964404": {
@@ -300607,8 +301058,7 @@
     "wikidata-museums/Q1668856": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:kunsthal-rotterdam",
-        "wikidata-museums/Q1668856"
+        "museum-nl/museum-nl:kunsthal-rotterdam"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -301172,10 +301622,11 @@
     },
     "wikidata-museums/Q1871689": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q1871689"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q1872824": {
@@ -301242,10 +301693,11 @@
     },
     "wikidata-museums/Q1888708": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q1888708"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q1889816": {
@@ -301446,10 +301898,11 @@
     },
     "wikidata-museums/Q1960205": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q1960205"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q1960748": {
@@ -301679,8 +302132,7 @@
     "wikidata-museums/Q1994770": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:museum-van-bommel-van-dam",
-        "wikidata-museums/Q1994770"
+        "museum-nl/museum-nl:museum-van-bommel-van-dam"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -302382,8 +302834,7 @@
     "wikidata-museums/Q2127133": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:buitenplaats-kasteel-wijlre",
-        "wikidata-museums/Q2127133"
+        "museum-nl/museum-nl:buitenplaats-kasteel-wijlre"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -302546,8 +302997,7 @@
     "wikidata-museums/Q2161858": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:museum-cobra",
-        "wikidata-museums/Q2161858"
+        "museum-nl/museum-nl:museum-cobra"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -302784,8 +303234,7 @@
       "members": [
         "museum-nl/museum-nl:galerij-prins-willem-v",
         "museum-nl/museum-nl:mauritshuis",
-        "wikidata-museums/Q221092",
-        "wikidata-museums/Q2805178"
+        "wikidata-museums/Q221092"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -303059,10 +303508,11 @@
     },
     "wikidata-museums/Q2298844": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q2298844"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q2299923": {
@@ -303393,6 +303843,7 @@
       "aliases": [],
       "members": [
         "museum-nl/museum-nl:speelgoedmuseum-oosterhout",
+        "wikidata-museums/Q140466915",
         "wikidata-museums/Q2375610"
       ],
       "missing_builds": 0,
@@ -303839,8 +304290,7 @@
     "wikidata-museums/Q2514360": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:museum-jan",
-        "wikidata-museums/Q2514360"
+        "museum-nl/museum-nl:museum-jan"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -303969,8 +304419,7 @@
     "wikidata-museums/Q255409": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:de-mesdag-collectie",
-        "wikidata-museums/Q255409"
+        "museum-nl/museum-nl:de-mesdag-collectie"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -304865,10 +305314,11 @@
     },
     "wikidata-museums/Q2842816": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q2842816"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q28465524": {
@@ -305124,10 +305574,11 @@
     },
     "wikidata-museums/Q29642218": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q29642218"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q2984779": {
@@ -305346,8 +305797,7 @@
     "wikidata-museums/Q3389883": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:mondriaanhuis",
-        "wikidata-museums/Q3389883"
+        "museum-nl/museum-nl:mondriaanhuis"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -305427,10 +305877,11 @@
     },
     "wikidata-museums/Q372829": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q372829"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q3783595": {
@@ -305551,10 +306002,11 @@
     },
     "wikidata-museums/Q42175133": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q42175133"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q42259056": {
@@ -305567,10 +306019,11 @@
     },
     "wikidata-museums/Q42297000": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q42297000"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q42298583": {
@@ -305832,8 +306285,7 @@
     "wikidata-museums/Q477275": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:museum-beelden-aan-zee",
-        "wikidata-museums/Q477275"
+        "museum-nl/museum-nl:museum-beelden-aan-zee"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -305914,10 +306366,11 @@
     },
     "wikidata-museums/Q50632603": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q50632603"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q51173590": {
@@ -306841,10 +307294,11 @@
     },
     "wikidata-museums/Q65936118": {
       "aliases": [],
+      "last_missing_observation": "2026.07.13-6480d09",
       "members": [
         "wikidata-museums/Q65936118"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "wikidata-museums/Q65950079": {
@@ -307215,8 +307669,7 @@
     "wikidata-museums/Q892727": {
       "aliases": [],
       "members": [
-        "museum-nl/museum-nl:bonnefanten",
-        "wikidata-museums/Q892727"
+        "museum-nl/museum-nl:bonnefanten"
       ],
       "missing_builds": 0,
       "status": "active"
