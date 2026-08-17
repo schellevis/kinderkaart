@@ -5185,9 +5185,12 @@
       "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42225,5.48781": {
-      "aliases": [],
+      "aliases": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42236,5.48841"
+      ],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42225,5.48781"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42225,5.48781",
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42236,5.48841"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -5208,11 +5211,9 @@
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42236,5.48841": {
       "aliases": [],
-      "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42236,5.48841"
-      ],
+      "members": [],
       "missing_builds": 0,
-      "status": "active"
+      "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.42242,5.43877": {
       "aliases": [],
@@ -6567,12 +6568,15 @@
       "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44219,5.41081": {
-      "aliases": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44246,5.41135"
-      ],
+      "aliases": [],
+      "members": [],
+      "missing_builds": 0,
+      "status": "tombstone"
+    },
+    "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44219,5.41081#aa158970": {
+      "aliases": [],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44219,5.41081",
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44246,5.41135"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44219,5.41081"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -6587,9 +6591,11 @@
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44246,5.41135": {
       "aliases": [],
-      "members": [],
+      "members": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44246,5.41135"
+      ],
       "missing_builds": 0,
-      "status": "tombstone"
+      "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44247,5.41883": {
       "aliases": [],
@@ -6725,9 +6731,12 @@
       "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357#b674910b": {
-      "aliases": [],
+      "aliases": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
+      ],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44433,5.4357",
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -6774,11 +6783,9 @@
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638": {
       "aliases": [],
-      "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.44465,5.43638"
-      ],
+      "members": [],
       "missing_builds": 0,
-      "status": "active"
+      "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.4447,5.51118": {
       "aliases": [],
@@ -7251,20 +7258,21 @@
       "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45334,5.4578#d457223b": {
-      "aliases": [],
+      "aliases": [
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45342,5.45848"
+      ],
       "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45334,5.4578"
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45334,5.4578",
+        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45342,5.45848"
       ],
       "missing_builds": 0,
       "status": "active"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45342,5.45848": {
       "aliases": [],
-      "members": [
-        "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45342,5.45848"
-      ],
+      "members": [],
       "missing_builds": 0,
-      "status": "active"
+      "status": "tombstone"
     },
     "eindhoven-speeltuinen/eindhoven-speeltuinen:51.45349,5.45955": {
       "aliases": [],
@@ -14713,10 +14721,60 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/11132923267": {
+      "aliases": [],
+      "members": [
+        "osm/node/11132923267"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11132923300": {
+      "aliases": [],
+      "members": [
+        "osm/node/11132923300"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/11135140870": {
       "aliases": [],
       "members": [
         "osm/node/11135140870"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11135140894": {
+      "aliases": [],
+      "members": [
+        "osm/node/11135140894",
+        "osm/node/11135140895"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11135140926": {
+      "aliases": [],
+      "members": [
+        "osm/node/11135140926"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11135141336": {
+      "aliases": [],
+      "members": [
+        "osm/node/11135141336"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11135141380": {
+      "aliases": [],
+      "members": [
+        "osm/node/11135141380",
+        "osm/node/11135141381"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -14913,6 +14971,14 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/11167652635": {
+      "aliases": [],
+      "members": [
+        "osm/node/11167652635"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/11172203562": {
       "aliases": [],
       "members": [
@@ -15010,10 +15076,44 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/11184387308": {
+      "aliases": [],
+      "members": [
+        "osm/node/11184387308"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11184387466": {
+      "aliases": [],
+      "members": [
+        "osm/node/11184387466",
+        "osm/node/11184387467"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/11184387542": {
       "aliases": [],
       "members": [
         "osm/node/11184387542"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11184388004": {
+      "aliases": [],
+      "members": [
+        "osm/node/11184388004"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11184388351": {
+      "aliases": [],
+      "members": [
+        "osm/node/11184388351",
+        "osm/node/11184388352"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -15048,6 +15148,15 @@
       "aliases": [],
       "members": [
         "osm/node/11186679830"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/11189053670": {
+      "aliases": [],
+      "members": [
+        "osm/node/11189053670",
+        "osm/node/11189053671"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -19258,11 +19367,30 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/12101420372": {
+      "aliases": [],
+      "members": [
+        "osm/node/12101420372",
+        "osm/node/12101420373",
+        "osm/node/12101420376",
+        "osm/node/12101420421"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/12101420391": {
       "aliases": [],
       "members": [
         "osm/node/12101420391",
         "osm/node/12101420392"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/12101420402": {
+      "aliases": [],
+      "members": [
+        "osm/node/12101420402"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -20171,6 +20299,22 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/12205468584": {
+      "aliases": [],
+      "members": [
+        "osm/node/12205468584"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/12205514001": {
+      "aliases": [],
+      "members": [
+        "osm/node/12205514001"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/12207813703": {
       "aliases": [],
       "members": [
@@ -20181,10 +20325,11 @@
     },
     "osm/node/12207886185": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/12207886185"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/12208733203": {
@@ -20417,6 +20562,14 @@
       "aliases": [],
       "members": [
         "osm/node/12250319916"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/12252847901": {
+      "aliases": [],
+      "members": [
+        "osm/node/12252847901"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -22646,18 +22799,20 @@
     },
     "osm/node/12752785577": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/12752785577"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/12752860726": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/12752860726"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/12755188883": {
@@ -22710,38 +22865,33 @@
     },
     "osm/node/12760431877": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/node/12760431877"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/12765804122": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/12765804122"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/12768267355": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/node/12768267355"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/12768267356": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/node/12768267356"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/12768267359": {
       "aliases": [],
@@ -23826,6 +23976,14 @@
       "aliases": [],
       "members": [
         "osm/node/13037783285"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/13039918358": {
+      "aliases": [],
+      "members": [
+        "osm/node/13039918358"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -28623,12 +28781,10 @@
     },
     "osm/node/14067581966": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/node/14067581966"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/node/14068086674": {
       "aliases": [],
@@ -28714,6 +28870,103 @@
       "aliases": [],
       "members": [
         "osm/node/14077579086"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14078658101": {
+      "aliases": [],
+      "members": [
+        "osm/node/14078658101"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14082166917": {
+      "aliases": [],
+      "members": [
+        "osm/node/14082166917"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14085346377": {
+      "aliases": [],
+      "members": [
+        "osm/node/14085346377"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14087180611": {
+      "aliases": [],
+      "members": [
+        "osm/node/14087180611"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14087187702": {
+      "aliases": [],
+      "members": [
+        "osm/node/14087187702"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14088541602": {
+      "aliases": [],
+      "members": [
+        "osm/node/14088541602"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14090215832": {
+      "aliases": [],
+      "members": [
+        "osm/node/14090215832"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14094062806": {
+      "aliases": [],
+      "members": [
+        "osm/node/14094062806"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14094616469": {
+      "aliases": [],
+      "members": [
+        "osm/node/14094616469"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14096494633": {
+      "aliases": [],
+      "members": [
+        "osm/node/14096494633"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14099035502": {
+      "aliases": [],
+      "members": [
+        "osm/node/14099035502"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/14099375133": {
+      "aliases": [],
+      "members": [
+        "osm/node/14099375133",
+        "osm/node/14099375140"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -35309,10 +35562,11 @@
     },
     "osm/node/3268049145": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/3268049145"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/3268721563": {
@@ -35381,10 +35635,11 @@
     },
     "osm/node/3269459348": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/3269459348"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/3275349374": {
@@ -45913,10 +46168,11 @@
     },
     "osm/node/4976019002": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/4976019002"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/4976210384": {
@@ -53436,10 +53692,11 @@
     },
     "osm/node/6313144448": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/node/6313144448"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/node/6314436266": {
@@ -55283,6 +55540,14 @@
       "aliases": [],
       "members": [
         "osm/node/6569731555"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/6571049442": {
+      "aliases": [],
+      "members": [
+        "osm/node/6571049442"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -67013,10 +67278,35 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/9805861463": {
+      "aliases": [],
+      "members": [
+        "osm/node/9805861463"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/9805861487": {
+      "aliases": [],
+      "members": [
+        "osm/node/9805861487"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/9806732945": {
       "aliases": [],
       "members": [
         "osm/node/9806732945"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/9807963558": {
+      "aliases": [],
+      "members": [
+        "osm/node/9807963558",
+        "osm/node/9807963559"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -68140,10 +68430,42 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/node/9952489052": {
+      "aliases": [],
+      "members": [
+        "osm/node/9952489052"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/9952489053": {
+      "aliases": [],
+      "members": [
+        "osm/node/9952489053"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/9952502619": {
+      "aliases": [],
+      "members": [
+        "osm/node/9952502619"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/node/9952502796": {
       "aliases": [],
       "members": [
         "osm/node/9952502796"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/node/9952502923": {
+      "aliases": [],
+      "members": [
+        "osm/node/9952502923"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -69257,6 +69579,14 @@
       "aliases": [],
       "members": [
         "osm/way/1005284389"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1005295401": {
+      "aliases": [],
+      "members": [
+        "osm/way/1005295401"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -71009,7 +71339,8 @@
     "osm/way/1019393020": {
       "aliases": [],
       "members": [
-        "osm/way/1019393020"
+        "osm/way/1019393020",
+        "osm/way/1550097962"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -95287,6 +95618,14 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/way/1147486641": {
+      "aliases": [],
+      "members": [
+        "osm/way/1147486641"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/way/1147550333": {
       "aliases": [],
       "members": [
@@ -112799,7 +113138,9 @@
     "osm/way/1184537232": {
       "aliases": [],
       "members": [
-        "osm/way/1184537232"
+        "osm/way/1184537232",
+        "osm/way/1184537233",
+        "osm/way/1184537234"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -140039,12 +140380,10 @@
     },
     "osm/way/1318351602": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/way/1318351602"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/1318351603": {
       "aliases": [],
@@ -142580,10 +142919,11 @@
     },
     "osm/way/1330583612": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/1330583612"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/1330620789": {
@@ -172439,10 +172779,11 @@
     },
     "osm/way/1497671804": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/1497671804"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/1497719201": {
@@ -179490,10 +179831,327 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/way/1547808820": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547808820"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547810721": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547810721"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547951390": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547951390",
+        "osm/way/1547951391"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547951416": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547951416"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547951519": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547951519"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547970241": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547970241"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1547975589": {
+      "aliases": [],
+      "members": [
+        "osm/way/1547975589"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548066043": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548066043",
+        "osm/way/1548066044"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548074016": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548074016"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548074084": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548074084",
+        "osm/way/1548074085",
+        "osm/way/1548074086"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548276429": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548276429"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548308664": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548308664"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548308721": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548308721"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548308731": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548308731"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548308735": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548308735"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548308738": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548308738"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548348395": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548348395"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548350207": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548350207"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548356616": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548356616"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548356664": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548356664",
+        "osm/way/1548356665"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548356701": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548356701"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548356831": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548356831"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548444934": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548444934"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548444959": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548444959"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548445033": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548445033"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548524199": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548524199"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548578403": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548578403"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548613837": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548613837"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548613852": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548613852"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548616538": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548616538"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548671719": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548671719"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/way/154870516": {
       "aliases": [],
       "members": [
         "osm/way/154870516"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548793007": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548793007"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548795906": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548795906"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548813149": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548813149"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548831871": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548831871"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548833437": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548833437"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548851576": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548851576"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548881975": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548881975"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548882170": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548882170"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -179506,10 +180164,448 @@
       "missing_builds": 0,
       "status": "active"
     },
+    "osm/way/1548960313": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548960313"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1548974397": {
+      "aliases": [],
+      "members": [
+        "osm/way/1548974397"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549031348": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549031348"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549054447": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549054447"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549182528": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549182528"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549191099": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549191099"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549200593": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549200593"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549207523": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549207523"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549275959": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549275959"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549322787": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549322787"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
     "osm/way/154934172": {
       "aliases": [],
       "members": [
         "osm/way/154934172"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549473129": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549473129"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549474347": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549474347"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549569760": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549569760"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549651578": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549651578"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549651677": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549651677",
+        "osm/way/1549651761",
+        "osm/way/1549651863"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549651878": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549651878"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549652039": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549652039",
+        "osm/way/1549652042"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549666238": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549666238"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549666284": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549666284",
+        "osm/way/1549666285"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549666384": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549666384",
+        "osm/way/1549666388"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549683915": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549683915"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549762141": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549762141"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549797491": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549797491"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549868995": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549868995"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549884959": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549884959"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549884967": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549884967"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549892395": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549892395"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549892402": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549892402"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549892404": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549892404"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549892490": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549892490"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549892492": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549892492"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549901821": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549901821"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1549990956": {
+      "aliases": [],
+      "members": [
+        "osm/way/1549990956"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550001938": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550001938"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550001939": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550001939"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550001943": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550001943"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550001946": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550001946"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550006981": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550006981"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550015547": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550015547"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550015817": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550015817"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550023760": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550023760"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550023769": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550023769"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550023774": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550023774",
+        "osm/way/1550023775"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550027696": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550027696"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550027699": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550027699"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550097999": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550097999"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550108472": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550108472"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550111619": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550111619"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550111674": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550111674"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550111714": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550111714"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550131946": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550131946"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550131949": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550131949"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550183993": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550183993"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/1550197098": {
+      "aliases": [],
+      "members": [
+        "osm/way/1550197098"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -181203,10 +182299,11 @@
     },
     "osm/way/168566580": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/168566580"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/168700505": {
@@ -187749,10 +188846,11 @@
     },
     "osm/way/260211427": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/260211427"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/260213403": {
@@ -187798,12 +188896,10 @@
     },
     "osm/way/260609486": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/way/260609486"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/260617251": {
       "aliases": [],
@@ -188944,10 +190040,11 @@
     },
     "osm/way/268779524": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/268779524"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/268875442": {
@@ -190529,10 +191626,11 @@
     },
     "osm/way/284123205": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/284123205"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/284212766": {
@@ -194229,10 +195327,11 @@
     },
     "osm/way/320460459": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/320460459"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/32046388": {
@@ -194261,10 +195360,11 @@
     },
     "osm/way/320515715": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/320515715"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/320567235": {
@@ -194423,12 +195523,10 @@
     },
     "osm/way/321622995": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/way/321622995"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/321623322": {
       "aliases": [],
@@ -236885,12 +237983,10 @@
     },
     "osm/way/636276080": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/way/636276080"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/636371644": {
       "aliases": [],
@@ -236910,26 +238006,29 @@
     },
     "osm/way/636602576": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/636602576"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/636602577": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/636602577"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/636620660": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/636620660"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/636621446": {
@@ -237049,18 +238148,20 @@
     },
     "osm/way/636893722": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/636893722"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/636893723": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/636893723"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/637117245": {
@@ -237888,10 +238989,11 @@
     },
     "osm/way/641800929": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/641800929"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/642150408": {
@@ -238012,6 +239114,14 @@
       "aliases": [],
       "members": [
         "osm/way/642868250"
+      ],
+      "missing_builds": 0,
+      "status": "active"
+    },
+    "osm/way/642911754": {
+      "aliases": [],
+      "members": [
+        "osm/way/642911754"
       ],
       "missing_builds": 0,
       "status": "active"
@@ -238729,20 +239839,22 @@
     },
     "osm/way/648809634": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/648809634",
         "osm/way/648809635"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/648809637": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/648809637",
         "osm/way/648809638"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/648809640": {
@@ -245049,12 +246161,10 @@
     },
     "osm/way/681894688": {
       "aliases": [],
-      "last_missing_observation": "2026.08.10-6480d09",
-      "members": [
-        "osm/way/681894688"
-      ],
-      "missing_builds": 1,
-      "status": "active"
+      "last_missing_observation": "2026.08.17-6480d09",
+      "members": [],
+      "missing_builds": 2,
+      "status": "tombstone"
     },
     "osm/way/681915518": {
       "aliases": [],
@@ -247302,10 +248412,11 @@
     },
     "osm/way/691430932": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/691430932"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/691430933": {
@@ -263821,10 +264932,11 @@
     },
     "osm/way/801433277": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/801433277"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/801433290": {
@@ -273865,10 +274977,11 @@
     },
     "osm/way/864187476": {
       "aliases": [],
+      "last_missing_observation": "2026.08.17-6480d09",
       "members": [
         "osm/way/864187476"
       ],
-      "missing_builds": 0,
+      "missing_builds": 1,
       "status": "active"
     },
     "osm/way/864308347": {
